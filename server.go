@@ -23,18 +23,22 @@ import (
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
 
-type post struct {
+type postJSON struct {
 	Title string `json:"title"`
 	Body  string `json:"body"`
 	Scope string `json:"scope"`
 }
 
-type postCreationResponse struct {
+type postLinks struct {
 	EditLink string `json:"editLink"`
 	ViewLink string `json:"viewLink"`
 }
 
+// type post
+
 var db *sqlx.DB
+
+// ADD A MUTEX?########
 
 // Generate a random string of 32 characters
 func generateRandomString() string {
@@ -50,6 +54,7 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.RequestURI())
 
 	_ = "SELECT * FROM Posts, Links WHERE Posts.post_id = Links.post_id and (edit_id = ### or view_id = ###)"
+
 	// Check if the resource has the edit id
 	// 		-> Then return title, body, scope, admin link, view link
 	// Check if the resource has the view id
@@ -98,7 +103,7 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(r.URL.RequestURI())
 	// Decode Post Contents
-	updatedPost := post{}
+	updatedPost := postJSON{}
 	err := json.NewDecoder(r.Body).Decode(&updatedPost)
 
 	if err != nil {
@@ -117,26 +122,27 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 	_ = "UPDATE Posts, Links SET ...... WHERE Posts.post_id = Links.post_id and edit_id = ###"
 }
 
-// isUniqueViolation returns true if the supplied error resulted from a unique constraint violation.
+// isUniqueViolation returns true if the supplied error resulted from a primary key constraint failure.
 func isUniqueViolation(err error) bool {
 	if err, ok := err.(sqlite3.Error); ok {
-		return err.Code == 19 && err.ExtendedCode == 2067
+		return err.Code == 19 && err.ExtendedCode == 1555
 	}
 
 	return false
 }
 
-func addLinkIDToDatabase(linkID string, postID int64, access string) {
+func addLinkIDToDatabase(linkID string, postID int64, access string) string {
 	query := `INSERT INTO links (link_id, access, post_id)
                        VALUES ($1, $2, $3)`
 	_, err := db.Exec(query, linkID, access, postID)
 	if err != nil {
 		if isUniqueViolation(err) {
-			addLinkIDToDatabase(linkID, postID, access)
+			linkID = addLinkIDToDatabase(generateRandomString(), postID, access)
 		} else {
 			fmt.Errorf("post creation unsuccessful")
 		}
 	}
+	return linkID
 }
 
 // Create a post with the contents given by client and respond back with the access links
@@ -144,7 +150,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Create")
 
 	// Decode Post Contents
-	newPost := post{}
+	newPost := postJSON{}
 	err := json.NewDecoder(r.Body).Decode(&newPost)
 	if err != nil {
 		log.Println("error: decoding error occured")
@@ -153,13 +159,6 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(newPost.Title)
 
 	fmt.Println(r.Host)
-
-	editID := generateRandomString()
-	viewID := generateRandomString()
-
-	editLink := path.Join(r.Host, r.RequestURI, editID)
-	viewLink := path.Join(r.Host, r.RequestURI, viewID)
-	fmt.Println(editLink, viewLink)
 
 	// Insert data in posts table
 	var result sql.Result
@@ -172,11 +171,15 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	postID, err := result.LastInsertId()
 
 	// Insert the Link ID's to the Link table
-	addLinkIDToDatabase(editID, postID, "Edit")
-	addLinkIDToDatabase(viewID, postID, "View")
+	editID := addLinkIDToDatabase(generateRandomString(), postID, "Edit")
+	viewID := addLinkIDToDatabase(generateRandomString(), postID, "View")
+
+	editLink := path.Join(r.Host, r.RequestURI, editID)
+	viewLink := path.Join(r.Host, r.RequestURI, viewID)
+	fmt.Println(editLink, viewLink)
 
 	// Encode and Send Response To Client
-	response := postCreationResponse{EditLink: editLink, ViewLink: viewLink}
+	response := postLinks{EditLink: editLink, ViewLink: viewLink}
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		log.Print("error: encoding unsuccessful")
