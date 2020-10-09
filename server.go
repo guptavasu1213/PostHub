@@ -9,7 +9,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -91,13 +90,10 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 	// If not found any records, then send 404 or something
 
 	log.Println(r.URL.RequestURI())
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
 	// Decode Post Contents
 	updatedPost := post{}
-	err = json.Unmarshal(reqBody, &updatedPost)
+	err := json.NewDecoder(r.Body).Decode(&updatedPost)
+
 	if err != nil {
 		log.Println("error: decoding error occured")
 	}
@@ -111,25 +107,21 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Create")
 
-	reqBody, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
 	// Decode Post Contents
 	newPost := post{}
-	err = json.Unmarshal(reqBody, &newPost)
+	err := json.NewDecoder(r.Body).Decode(&newPost)
 	if err != nil {
 		log.Println("error: decoding error occured")
 	}
 
 	fmt.Println(newPost.Title)
-	editLink := path.Join(r.RequestURI, generateRandomString())
-	viewLink := path.Join(r.RequestURI, generateRandomString())
+
+	fmt.Println(r.Host)
+
+	editLink := path.Join(r.Host, r.RequestURI, generateRandomString())
+	viewLink := path.Join(r.Host, r.RequestURI, generateRandomString())
 	fmt.Println(editLink, viewLink)
 
-	// MIGHT HAVE TO CHANGE TO MARSHALL FOR CODE CONSISTENCY
 	// Encode and Send Response To Client
 	response := postCreationResponse{EditLink: editLink, ViewLink: viewLink}
 	err = json.NewEncoder(w).Encode(response)
