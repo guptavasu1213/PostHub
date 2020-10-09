@@ -16,6 +16,7 @@ import (
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -30,11 +31,20 @@ type postJSON struct {
 }
 
 type postLinks struct {
-	EditLink string `json:"editLink"`
+	EditLink string `json:"editLink,omitempty"`
 	ViewLink string `json:"viewLink"`
 }
 
-// type post
+// Used when retrieving posts from the database
+type postRetrieval struct {
+	PostID int64  `json:"-" db:"post_id,omitempty"`
+	Title  string `json:"title,omitempty" db:"title,omitempty"`
+	Body   string `json:"body,omitempty" db:"body,omitempty"`
+	Scope  string `json:"scope,omitempty" db:"scope,omitempty"` // Private or Public
+	LinkID string `json:"-" db:"link_id,omitempty"`
+	Access string `json:"-" db:"access,omitempty"` // Edit or View
+	Epoch  string `json:"epoch,omitempty" db:"epoch,omitempty"`
+}
 
 var db *sqlx.DB
 
@@ -53,14 +63,66 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 	// If not found any records, then send 404 or something
 	log.Println(r.URL.RequestURI())
 
-	_ = "SELECT * FROM Posts, Links WHERE Posts.post_id = Links.post_id and (edit_id = ### or view_id = ###)"
+	lastIndex := strings.LastIndex(r.URL.Path, "/")
+	userLinkID := r.URL.Path[lastIndex+1:]
+	resourceWithoutLinkID := r.URL.Path[:lastIndex]
 
-	// Check if the resource has the edit id
-	// 		-> Then return title, body, scope, admin link, view link
-	// Check if the resource has the view id
-	// 		-> Then return title, body, scope
-	// Else return 404 or SOMETHING (BAD REQUEST MAYBE?)#######
+	// Retrieve the post from the database
+	query := `SELECT *
+			 	FROM Posts, Links 
+			 	WHERE Posts.post_id = Links.post_id and link_id = $1`
+	entry := postRetrieval{}
+	err := db.Get(&entry, query, userLinkID)
+	if err == sql.ErrNoRows {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		fmt.Println("no Entries found")
+	} else if err != nil {
+		fmt.Println("unsuccessful data lookup", err)
+	}
 
+	if entry.Access == "View" {
+		entry.Scope = "" // To avoid JSON encoding of the scope
+
+		// Encode and Send Response To Client
+		err = json.NewEncoder(w).Encode(entry)
+		if err != nil {
+			log.Print("error: encoding unsuccessful")
+		}
+
+	} else { // Edit Access
+		// look up the view-id
+		var viewID string
+
+		query = `SELECT link_id 
+					FROM Links
+					WHERE post_id = $1 and access = "View"`
+		err = db.Get(&viewID, query, entry.PostID)
+		if err == sql.ErrNoRows {
+			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			fmt.Println("no Entries found")
+		} else if err != nil {
+			fmt.Println("unsuccessful data lookup", err)
+		}
+
+		// Add Links to struct
+		links := postLinks{
+			EditLink: path.Join(r.Host, resourceWithoutLinkID, entry.LinkID),
+			ViewLink: path.Join(r.Host, resourceWithoutLinkID, viewID),
+		}
+
+		// Combine the post and links structs for JSON encoding
+		response := struct {
+			postRetrieval
+			postLinks
+		}{entry, links}
+
+		// Encode and Send Response To Client
+		err = json.NewEncoder(w).Encode(response)
+		if err != nil {
+			log.Print("error: encoding unsuccessful")
+		}
+
+	}
 }
 
 // Retrieve all public posts
@@ -131,6 +193,7 @@ func isUniqueViolation(err error) bool {
 	return false
 }
 
+// Return the unique link id and add it to the database
 func addLinkIDToDatabase(linkID string, postID int64, access string) string {
 	query := `INSERT INTO links (link_id, access, post_id)
                        VALUES ($1, $2, $3)`
@@ -148,7 +211,6 @@ func addLinkIDToDatabase(linkID string, postID int64, access string) string {
 // Create a post with the contents given by client and respond back with the access links
 func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Create")
-
 	// Decode Post Contents
 	newPost := postJSON{}
 	err := json.NewDecoder(r.Body).Decode(&newPost)
@@ -174,8 +236,8 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	editID := addLinkIDToDatabase(generateRandomString(), postID, "Edit")
 	viewID := addLinkIDToDatabase(generateRandomString(), postID, "View")
 
-	editLink := path.Join(r.Host, r.RequestURI, editID)
-	viewLink := path.Join(r.Host, r.RequestURI, viewID)
+	editLink := getLinkFromID(r, editID)
+	viewLink := getLinkFromID(r, viewID)
 	fmt.Println(editLink, viewLink)
 
 	// Encode and Send Response To Client
@@ -187,14 +249,14 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	r := mux.NewRouter()
-
 	var err error
 	db, err = sqlx.Connect("sqlite3", "assign1.db")
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cannot connect to database: %v\n", err)
 		os.Exit(1)
 	}
+
+	r := mux.NewRouter()
 	// For all posts
 	// r.Path("/api/v1/posts").Methods("GET").HandlerFunc(handleRetrievePosts)
 	r.Path("/api/v1/posts").Methods("POST").HandlerFunc(handleCreatePost)
@@ -205,5 +267,5 @@ func main() {
 	r.Path("/api/v1/posts/{*}").Methods("UPDATE").HandlerFunc(handleUpdatePost)
 	r.Path("/api/v1/posts/{*}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
-	log.Fatal(http.ListenAndServe(":8001", r))
+	log.Fatal(http.ListenAndServe(":8101", r))
 }
