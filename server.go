@@ -24,19 +24,13 @@ import (
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
 
-type postJSON struct {
-	Title string `json:"title"`
-	Body  string `json:"body"`
-	Scope string `json:"scope"`
-}
-
 type postLinks struct {
 	EditLink string `json:"editLink,omitempty"`
 	ViewLink string `json:"viewLink"`
 }
 
 // Used when retrieving posts from the database
-type postRetrieval struct {
+type post struct {
 	PostID int64  `json:"-" db:"post_id,omitempty"`
 	Title  string `json:"title,omitempty" db:"title,omitempty"`
 	Body   string `json:"body,omitempty" db:"body,omitempty"`
@@ -59,8 +53,6 @@ func generateRandomString() string {
 
 func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Retrieve single record")
-	// Extract the record corresponding to if the ID is an edit OR view
-	// If not found any records, then send 404 or something
 	log.Println(r.URL.RequestURI())
 
 	lastIndex := strings.LastIndex(r.URL.Path, "/")
@@ -71,22 +63,27 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 	query := `SELECT *
 			 	FROM Posts, Links 
 			 	WHERE Posts.post_id = Links.post_id and link_id = $1`
-	entry := postRetrieval{}
+	entry := post{}
 	err := db.Get(&entry, query, userLinkID)
 	if err == sql.ErrNoRows {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		fmt.Println("no Entries found")
+		log.Println("error: no entries found")
+		return
 	} else if err != nil {
-		fmt.Println("unsuccessful data lookup", err)
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("error: unsuccessful data lookup")
+		return
 	}
 
-	if entry.Access == "View" {
+	if entry.Access == "View" { // View Access
 		entry.Scope = "" // To avoid JSON encoding of the scope
 
 		// Encode and Send Response To Client
 		err = json.NewEncoder(w).Encode(entry)
 		if err != nil {
-			log.Print("error: encoding unsuccessful")
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println("error: encoding unsuccessful")
+			return
 		}
 
 	} else { // Edit Access
@@ -100,8 +97,11 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 		if err == sql.ErrNoRows {
 			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 			fmt.Println("no Entries found")
+			return
 		} else if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			fmt.Println("unsuccessful data lookup", err)
+			return
 		}
 
 		// Add Links to struct
@@ -112,14 +112,16 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 
 		// Combine the post and links structs for JSON encoding
 		response := struct {
-			postRetrieval
+			post
 			postLinks
 		}{entry, links}
 
 		// Encode and Send Response To Client
 		err = json.NewEncoder(w).Encode(response)
 		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			log.Print("error: encoding unsuccessful")
+			return
 		}
 
 	}
@@ -148,6 +150,7 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request) {
 	_ = "DELETE FROM Posts, Links WHERE Posts.post_id = Links.post_id and edit_id = ###"
 	// Check if the resource has the edit id
 	// 		-> DELETE the record corresponding to if the ID
+	// 		DELETE BOTH RECORDS IN THE LINKS TABLE using single command
 	// Check if the resource has the view id
 	// 		-> Send 403
 	// Else return 404
@@ -165,16 +168,18 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(r.URL.RequestURI())
 	// Decode Post Contents
-	updatedPost := postJSON{}
+	updatedPost := post{}
 	err := json.NewDecoder(r.Body).Decode(&updatedPost)
 
 	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Println("error: decoding error occured")
 	}
 
 	// Encode and Send Response To Client
 	err = json.NewEncoder(w).Encode(updatedPost)
 	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Print("error: encoding unsuccessful")
 	}
 
@@ -194,14 +199,15 @@ func isUniqueViolation(err error) bool {
 }
 
 // Return the unique link id and add it to the database
-func addLinkIDToDatabase(linkID string, postID int64, access string) string {
+func addLinkIDToDatabase(w http.ResponseWriter, linkID string, postID int64, access string) string {
 	query := `INSERT INTO links (link_id, access, post_id)
                        VALUES ($1, $2, $3)`
 	_, err := db.Exec(query, linkID, access, postID)
 	if err != nil {
 		if isUniqueViolation(err) {
-			linkID = addLinkIDToDatabase(generateRandomString(), postID, access)
+			linkID = addLinkIDToDatabase(w, generateRandomString(), postID, access)
 		} else {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			fmt.Errorf("post creation unsuccessful")
 		}
 	}
@@ -212,13 +218,13 @@ func addLinkIDToDatabase(linkID string, postID int64, access string) string {
 func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Create")
 	// Decode Post Contents
-	newPost := postJSON{}
+	newPost := post{}
 	err := json.NewDecoder(r.Body).Decode(&newPost)
 	if err != nil {
 		log.Println("error: decoding error occured")
 	}
 
-	fmt.Println(newPost.Title)
+	fmt.Println(newPost)
 
 	fmt.Println(r.Host)
 
@@ -233,11 +239,11 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	postID, err := result.LastInsertId()
 
 	// Insert the Link ID's to the Link table
-	editID := addLinkIDToDatabase(generateRandomString(), postID, "Edit")
-	viewID := addLinkIDToDatabase(generateRandomString(), postID, "View")
+	editID := addLinkIDToDatabase(w, generateRandomString(), postID, "Edit")
+	viewID := addLinkIDToDatabase(w, generateRandomString(), postID, "View")
 
-	editLink := getLinkFromID(r, editID)
-	viewLink := getLinkFromID(r, viewID)
+	editLink := path.Join(r.Host, r.RequestURI, editID)
+	viewLink := path.Join(r.Host, r.RequestURI, viewID)
 	fmt.Println(editLink, viewLink)
 
 	// Encode and Send Response To Client
