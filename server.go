@@ -35,7 +35,7 @@ type post struct {
 	Title        string `json:"title,omitempty" db:"title,omitempty"`
 	Body         string `json:"body,omitempty" db:"body,omitempty"`
 	Scope        string `json:"scope,omitempty" db:"scope,omitempty"` // Private or Public
-	LinkID       string `json:"-" db:"link_id,omitempty"`
+	LinkID       string `json:"link,omitempty" db:"link_id,omitempty"`
 	Access       string `json:"-" db:"access,omitempty"` // Edit or View
 	Epoch        int64  `json:"epoch,omitempty" db:"epoch,omitempty"`
 	ReportReason string `json:"reason,omitempty" db:"reason,omitempty"`
@@ -83,7 +83,9 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if entry.Access == "View" { // View Access
-		entry.Scope = "" // To avoid JSON encoding of the scope
+		// To avoid JSON encoding
+		entry.Scope = ""
+		entry.LinkID = ""
 
 		// Encode and Send Response To Client
 		err = json.NewEncoder(w).Encode(entry)
@@ -111,14 +113,14 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Add Links to struct#########################################
-		lastIndex := strings.LastIndex(r.URL.Path, "/")
-		resourceWithoutLinkID := r.URL.Path[:lastIndex]
+		lastSlashIndex := strings.LastIndex(r.URL.Path, "/")
+		resourceWithoutLinkID := r.URL.Path[:lastSlashIndex]
 
 		links := postLinks{
 			EditLink: path.Join(r.Host, resourceWithoutLinkID, entry.LinkID),
 			ViewLink: path.Join(r.Host, resourceWithoutLinkID, viewID),
 		}
+		entry.LinkID = ""
 
 		// Combine the post and links structs for JSON encoding
 		response := struct {
@@ -152,7 +154,7 @@ func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 	entries := []post{}
 	offset := pageNum * limit
 
-	query := `SELECT title, body, epoch, link_id
+	query := `SELECT title, body, epoch, Links.link_id 
 				FROM Posts p, Links
 				WHERE Links.post_id = p.post_id and scope = "Public" and access = "View" and
 				not exists
@@ -167,6 +169,11 @@ func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Println("error: data retrieval unsuccessful")
 		return
+	}
+
+	// Change Link ID to Links to the post
+	for i := range entries {
+		entries[i].LinkID = path.Join(r.Host, r.URL.Path, entries[i].LinkID)
 	}
 
 	// Encode and Send Response To Client
@@ -290,11 +297,6 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 		log.Println("error: decoding error occured")
 		return
 	}
-
-	fmt.Println(newPost)
-
-	fmt.Println(r.Host)
-
 	// Insert data in posts table
 	var result sql.Result
 	query := `INSERT INTO posts (title, body, scope, epoch)
@@ -302,7 +304,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	result, err = db.Exec(query, newPost.Title, newPost.Body, newPost.Scope, time.Now().Unix())
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		fmt.Errorf("post creation unsuccessful")
+		log.Println("error: post creation unsuccessful")
 		return
 	}
 	postID, err := result.LastInsertId()
@@ -313,14 +315,13 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 
 	editLink := path.Join(r.Host, r.RequestURI, editID)
 	viewLink := path.Join(r.Host, r.RequestURI, viewID)
-	fmt.Println(editLink, viewLink)
 
 	// Encode and Send Response To Client
 	response := postLinks{EditLink: editLink, ViewLink: viewLink}
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Print("error: encoding unsuccessful")
+		log.Println("error: encoding unsuccessful")
 	}
 }
 
