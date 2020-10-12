@@ -89,7 +89,7 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 		err = json.NewEncoder(w).Encode(entry)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			log.Println("error: encoding unsuccessful")
+			log.Println("error: JSON encoding unsuccessful")
 			return
 		}
 
@@ -130,24 +130,53 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 		err = json.NewEncoder(w).Encode(response)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			log.Print("error: encoding unsuccessful")
-			return
+			log.Print("error: JSON encoding unsuccessful")
 		}
-
 	}
 }
 
 // Retrieve all public posts
 func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.RequestURI(), r.Method)
-	// Extract the public records which aren't reported
-	// If not found any records, then send nothing
 
-	// USE PAGINATION-- offset stuff
-	// Check boolean values in sqlite3
-	_ = "SELECT * FROM Posts, Links, Report WHERE Posts.post_id = Links.post_id and Report.post_id = Posts.post_id and scope = \"Public\" and reported = \"False\""
+	// Retrieve the page number from the query string
+	pageNum, err := strconv.Atoi(r.URL.Query().Get("page"))
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		log.Println("error: invalid page number")
+		return
+	}
 
-	log.Println(r.URL.RequestURI())
+	// Retrieve the public records from the database
+	limit := 5
+	entries := []post{}
+	offset := pageNum * limit
+
+	query := `SELECT title, body, epoch, link_id
+				FROM Posts p, Links
+				WHERE Links.post_id = p.post_id and scope = "Public" and access = "View" and
+				not exists
+					(SELECT post_id
+						FROM report
+						WHERE report.post_id = p.post_id)
+				ORDER BY epoch DESC
+				LIMIT $1 OFFSET $2`
+
+	err = db.Select(&entries, query, limit, offset)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("error: data retrieval unsuccessful")
+		return
+	}
+
+	// Encode and Send Response To Client
+	err = json.NewEncoder(w).Encode(entries)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Print("error: JSON encoding unsuccessful")
+	} else {
+		log.Println("Data Retrieval and Encoding successful")
+	}
 }
 
 // Delete the post with the given link if having edit access
@@ -196,6 +225,7 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			log.Println("error: JSON decoding error occured")
+			return
 		}
 
 		// Generate the query based on the fields passed
@@ -230,7 +260,6 @@ func isUniqueViolation(err error) bool {
 	if err, ok := err.(sqlite3.Error); ok {
 		return err.Code == 19 && err.ExtendedCode == 1555
 	}
-
 	return false
 }
 
@@ -257,7 +286,9 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	newPost := post{}
 	err := json.NewDecoder(r.Body).Decode(&newPost)
 	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Println("error: decoding error occured")
+		return
 	}
 
 	fmt.Println(newPost)
@@ -270,7 +301,9 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
                        VALUES ($1, $2, $3, $4)`
 	result, err = db.Exec(query, newPost.Title, newPost.Body, newPost.Scope, time.Now().Unix())
 	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		fmt.Errorf("post creation unsuccessful")
+		return
 	}
 	postID, err := result.LastInsertId()
 
@@ -286,6 +319,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	response := postLinks{EditLink: editLink, ViewLink: viewLink}
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Print("error: encoding unsuccessful")
 	}
 }
@@ -306,6 +340,7 @@ func handlePostReport(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			log.Println("error: JSON decoding error occured")
+			return
 		}
 		updatedPostContents.PostID = entry.PostID
 
@@ -331,7 +366,7 @@ func main() {
 
 	r := mux.NewRouter()
 	// For all posts
-	// r.Path("/api/v1/posts").Methods("GET").HandlerFunc(handleRetrievePosts)
+	r.Path("/api/v1/posts").Methods("GET").HandlerFunc(handleRetrievePosts)
 	r.Path("/api/v1/posts").Methods("POST").HandlerFunc(handleCreatePost)
 
 	// For individual post
@@ -341,5 +376,5 @@ func main() {
 	r.Path("/api/v1/posts/report/{*}").Methods("UPDATE").HandlerFunc(handlePostReport)
 	r.Path("/api/v1/posts/{*}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
-	log.Fatal(http.ListenAndServe(":8111", r))
+	log.Fatal(http.ListenAndServe(":8110", r))
 }
