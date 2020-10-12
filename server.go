@@ -31,13 +31,14 @@ type postLinks struct {
 
 // Used when retrieving posts from the database
 type post struct {
-	PostID int64  `json:"-" db:"post_id,omitempty"`
-	Title  string `json:"title,omitempty" db:"title,omitempty"`
-	Body   string `json:"body,omitempty" db:"body,omitempty"`
-	Scope  string `json:"scope,omitempty" db:"scope,omitempty"` // Private or Public
-	LinkID string `json:"-" db:"link_id,omitempty"`
-	Access string `json:"-" db:"access,omitempty"` // Edit or View
-	Epoch  int64  `json:"epoch,omitempty" db:"epoch,omitempty"`
+	PostID       int64  `json:"-" db:"post_id,omitempty"`
+	Title        string `json:"title,omitempty" db:"title,omitempty"`
+	Body         string `json:"body,omitempty" db:"body,omitempty"`
+	Scope        string `json:"scope,omitempty" db:"scope,omitempty"` // Private or Public
+	LinkID       string `json:"-" db:"link_id,omitempty"`
+	Access       string `json:"-" db:"access,omitempty"` // Edit or View
+	Epoch        int64  `json:"epoch,omitempty" db:"epoch,omitempty"`
+	ReportReason string `json:"reason,omitempty" db:"reason,omitempty"`
 }
 
 var db *sqlx.DB
@@ -289,6 +290,37 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func handlePostReport(w http.ResponseWriter, r *http.Request) {
+	entry, err := getEntryForRequestedLink(w, r)
+	if err != nil {
+		return
+	}
+
+	if entry.Access == "Edit" {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		log.Println("error: cannot report a post with edit access")
+	} else {
+		// Decode Post Contents
+		updatedPostContents := post{}
+		err := json.NewDecoder(r.Body).Decode(&updatedPostContents)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println("error: JSON decoding error occured")
+		}
+		updatedPostContents.PostID = entry.PostID
+
+		// Reporting the post
+		query := `INSERT INTO REPORT (reason, post_id) VALUES (:reason, :post_id)`
+		_, err = db.NamedExec(query, updatedPostContents)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println("error: unsuccessful post reporting ", err)
+		} else {
+			log.Println("Post reported successfully!")
+		}
+	}
+}
+
 func main() {
 	var err error
 	db, err = sqlx.Connect("sqlite3", "assign1.db")
@@ -306,6 +338,7 @@ func main() {
 	// ##########CHANGE IT TO PROPER REGEX FOR HEX
 	r.Path("/api/v1/posts/{*}").Methods("GET").HandlerFunc(handleRetrievePost)
 	r.Path("/api/v1/posts/{*}").Methods("UPDATE").HandlerFunc(handleUpdatePost)
+	r.Path("/api/v1/posts/report/{*}").Methods("UPDATE").HandlerFunc(handlePostReport)
 	r.Path("/api/v1/posts/{*}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
 	log.Fatal(http.ListenAndServe(":8111", r))
