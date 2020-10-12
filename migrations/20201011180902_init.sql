@@ -11,12 +11,16 @@ CREATE TABLE posts(
 CREATE TABLE links(
     link_id text primary key,
     access text,
-    post_id INTEGER REFERENCES posts(post_id)
+    post_id INTEGER REFERENCES posts(post_id) 
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
 );
 
 CREATE TABLE report(
     reason text,
     post_id INTEGER REFERENCES posts(post_id)
+        ON DELETE CASCADE 
+        ON UPDATE CASCADE
 );
 -- +goose StatementEnd
 
