@@ -51,27 +51,32 @@ func generateRandomString() string {
 	return hex.EncodeToString(hash[:])
 }
 
-func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Retrieve single record")
-	log.Println(r.URL.RequestURI())
-
+// Parse the URL to find the post link ID and scan the database for the corresponding entry
+func getEntryForRequestedLink(w http.ResponseWriter, r *http.Request) (post, error) {
 	lastIndex := strings.LastIndex(r.URL.Path, "/")
-	userLinkID := r.URL.Path[lastIndex+1:]
-	resourceWithoutLinkID := r.URL.Path[:lastIndex]
+	postLinkID := r.URL.Path[lastIndex+1:]
 
 	// Retrieve the post from the database
 	query := `SELECT *
 			 	FROM Posts, Links 
 			 	WHERE Posts.post_id = Links.post_id and link_id = $1`
 	entry := post{}
-	err := db.Get(&entry, query, userLinkID)
+	err := db.Get(&entry, query, postLinkID)
 	if err == sql.ErrNoRows {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		log.Println("error: no entries found")
-		return
 	} else if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Println("error: unsuccessful data lookup")
+	}
+	return entry, err
+}
+
+// Retrieve a individual post based on the links
+func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL.RequestURI(), r.Method)
+	entry, err := getEntryForRequestedLink(w, r)
+	if err != nil {
 		return
 	}
 
@@ -90,7 +95,7 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 		// look up the view-id
 		var viewID string
 
-		query = `SELECT link_id 
+		query := `SELECT link_id 
 					FROM Links
 					WHERE post_id = $1 and access = "View"`
 		err = db.Get(&viewID, query, entry.PostID)
@@ -104,7 +109,10 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Add Links to struct
+		// Add Links to struct#########################################
+		lastIndex := strings.LastIndex(r.URL.Path, "/")
+		resourceWithoutLinkID := r.URL.Path[:lastIndex]
+
 		links := postLinks{
 			EditLink: path.Join(r.Host, resourceWithoutLinkID, entry.LinkID),
 			ViewLink: path.Join(r.Host, resourceWithoutLinkID, viewID),
@@ -129,7 +137,7 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 
 // Retrieve all public posts
 func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Retrieve public")
+	log.Println(r.URL.RequestURI(), r.Method)
 	// Extract the public records which aren't reported
 	// If not found any records, then send nothing
 
@@ -142,26 +150,34 @@ func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 
 // Delete the post with the given link if having edit access
 func handleDeletePost(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Del")
-	// DELETE the record corresponding to if the ID is an edit
-	// If the link is view, send 403
-	// If not found any records, then send 404 or something
+	log.Println(r.URL.RequestURI(), r.Method)
 
-	_ = "DELETE FROM Posts, Links WHERE Posts.post_id = Links.post_id and edit_id = ###"
-	// Check if the resource has the edit id
-	// 		-> DELETE the record corresponding to if the ID
-	// 		DELETE BOTH RECORDS IN THE LINKS TABLE using single command
-	// Check if the resource has the view id
-	// 		-> Send 403
-	// Else return 404
+	entry, err := getEntryForRequestedLink(w, r)
+	if err != nil {
+		return
+	}
 
-	log.Println(r.URL.RequestURI())
+	if entry.Access == "View" { // Post removal forbidden
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		log.Println("error: view links cannot delete posts")
+	} else { // Try post removal
+		query := `PRAGMA foreign_keys = ON;
+					DELETE FROM posts where post_id = $1`
+
+		_, err := db.Exec(query, entry.PostID)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println("unsuccessful database entry removal", err)
+		} else {
+			log.Println("Successful data removal")
+		}
+	}
 
 }
 
 // Update the post with the given link if having edit access
 func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Update")
+	log.Println(r.URL.RequestURI(), r.Method)
 	// UPDATE the record corresponding to if the ID is an edit
 	// If the link is view, send 403
 	// If not found any records, then send 404 or something
@@ -216,7 +232,7 @@ func addLinkIDToDatabase(w http.ResponseWriter, linkID string, postID int64, acc
 
 // Create a post with the contents given by client and respond back with the access links
 func handleCreatePost(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Create")
+	log.Println(r.URL.RequestURI(), r.Method)
 	// Decode Post Contents
 	newPost := post{}
 	err := json.NewDecoder(r.Body).Decode(&newPost)
@@ -273,5 +289,5 @@ func main() {
 	r.Path("/api/v1/posts/{*}").Methods("UPDATE").HandlerFunc(handleUpdatePost)
 	r.Path("/api/v1/posts/{*}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
-	log.Fatal(http.ListenAndServe(":8101", r))
+	log.Fatal(http.ListenAndServe(":8001", r))
 }
