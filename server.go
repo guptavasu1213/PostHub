@@ -37,7 +37,7 @@ type post struct {
 	Scope  string `json:"scope,omitempty" db:"scope,omitempty"` // Private or Public
 	LinkID string `json:"-" db:"link_id,omitempty"`
 	Access string `json:"-" db:"access,omitempty"` // Edit or View
-	Epoch  string `json:"epoch,omitempty" db:"epoch,omitempty"`
+	Epoch  int64  `json:"epoch,omitempty" db:"epoch,omitempty"`
 }
 
 var db *sqlx.DB
@@ -75,6 +75,7 @@ func getEntryForRequestedLink(w http.ResponseWriter, r *http.Request) (post, err
 // Retrieve a individual post based on the links
 func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.RequestURI(), r.Method)
+
 	entry, err := getEntryForRequestedLink(w, r)
 	if err != nil {
 		return
@@ -105,7 +106,7 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 			return
 		} else if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			fmt.Println("unsuccessful data lookup", err)
+			fmt.Println("unsuccessful data lookup")
 			return
 		}
 
@@ -178,31 +179,49 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request) {
 // Update the post with the given link if having edit access
 func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.RequestURI(), r.Method)
-	// UPDATE the record corresponding to if the ID is an edit
-	// If the link is view, send 403
-	// If not found any records, then send 404 or something
 
-	log.Println(r.URL.RequestURI())
-	// Decode Post Contents
-	updatedPost := post{}
-	err := json.NewDecoder(r.Body).Decode(&updatedPost)
-
+	entry, err := getEntryForRequestedLink(w, r)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println("error: decoding error occured")
+		return
 	}
 
-	// Encode and Send Response To Client
-	err = json.NewEncoder(w).Encode(updatedPost)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Print("error: encoding unsuccessful")
+	if entry.Access == "View" { // Post removal forbidden
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		log.Println("error: view links cannot update posts")
+	} else { // Try post editing
+		// Decode Post Contents
+		updatedPostContents := post{}
+		err := json.NewDecoder(r.Body).Decode(&updatedPostContents)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println("error: JSON decoding error occured")
+		}
+
+		// Generate the query based on the fields passed
+		query := `UPDATE Posts SET `
+
+		if updatedPostContents.Title != "" {
+			query += `title=:title, `
+		}
+		if updatedPostContents.Body != "" {
+			query += `body=:body, `
+		}
+		if updatedPostContents.Scope != "" {
+			query += `scope=:scope `
+		}
+
+		query += `WHERE post_id=:post_id`
+		fmt.Println(query)
+
+		updatedPostContents.PostID = entry.PostID
+		_, err = db.NamedExec(query, updatedPostContents)
+		if err != nil {
+			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			log.Println("error: unsuccessful entry update", err)
+		} else {
+			log.Println("Data updated successfully")
+		}
 	}
-
-	fmt.Println(updatedPost)
-
-	// Try updating and see if it updates the value not passed or not
-	_ = "UPDATE Posts, Links SET ...... WHERE Posts.post_id = Links.post_id and edit_id = ###"
 }
 
 // isUniqueViolation returns true if the supplied error resulted from a primary key constraint failure.
@@ -214,7 +233,7 @@ func isUniqueViolation(err error) bool {
 	return false
 }
 
-// Return the unique link id and add it to the database
+// Add a unique link to the database and return it
 func addLinkIDToDatabase(w http.ResponseWriter, linkID string, postID int64, access string) string {
 	query := `INSERT INTO links (link_id, access, post_id)
                        VALUES ($1, $2, $3)`
@@ -289,5 +308,5 @@ func main() {
 	r.Path("/api/v1/posts/{*}").Methods("UPDATE").HandlerFunc(handleUpdatePost)
 	r.Path("/api/v1/posts/{*}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
-	log.Fatal(http.ListenAndServe(":8001", r))
+	log.Fatal(http.ListenAndServe(":8111", r))
 }
