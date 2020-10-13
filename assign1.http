@@ -1,10 +1,17 @@
 
 # -*- restclient -*-
 
+#Variables
+:port = 8110
+:api = http://localhost::port/api/v1
+:viewLinkID = 1854e37bba3c023e372b7d930547b7c8
+:editLinkID = a49ef12c507ec98527d80db9bba038cc
+:unknownLinkID = thisIsNotGonnaWork
+
 # ======== Test Post Creation End-Point ========
 
 # Create post
-POST http://localhost:8110/api/v1/posts
+POST :api/posts
 Content-Type: application/json
 
 {
@@ -15,7 +22,7 @@ Content-Type: application/json
 
 # Create post with null values
 # Reports Error ##############
-POST http://localhost:8110/api/v1/posts
+POST :api/posts
 Content-Type: application/json
 
 {
@@ -26,7 +33,7 @@ Content-Type: application/json
 
 # Create post with incorrect JSON. The JSON is missing a comma's. 
 # Reports error.
-POST http://localhost:8110/api/v1/posts
+POST :api/posts
 Content-Type: application/json
 
 {
@@ -40,38 +47,38 @@ Content-Type: application/json
 # Retrieving all posts end point
 # Accessing a valid page
 # For each post, their title, body, view link, and timestamp is sent by the server
-GET http://localhost:8110/api/v1/posts?page=1
+GET :api/posts?page=1
 
 
 # Retrieving a page outside the bounds
 # Returns empty JSON array
-GET http://localhost:8110/api/v1/posts?page=100
+GET :api/posts?page=100
 
 # Retrieving something from an invalid page number
 # Return error
-GET http://localhost:8110/api/v1/posts?page=thisIDisnotgonnawork
+GET :api/posts?page=:unknownLinkID
 
 
 # ======== Test Specific Post Retrieval End-Point ========
 
 # Getting the post using its view link
 # View link returns the Title, Body and the Timestamp of post creation.  
-GET http://localhost:8110/api/v1/posts/966bdd0474e6744fc6a50eb18e44e0e6
+GET :api/posts/:viewLinkID
 
 # Getting the post using its edit link
 # View link returns the Title, Body, post creation timestamp, view link, and edit link.   
-GET http://localhost:8110/api/v1/posts/a49ef12c507ec98527d80db9bba038cc
+GET :api/posts/:editLinkID
 
 # Getting the post with an unknown link
 # Returns error
-GET http://localhost:8110/api/v1/posts/thislinkisnotgonnawork
+GET :api/posts/:unknownLinkID
 
 
 # ======== Test Post Updating End-Point ========
 
 # Updating with a view link
 # Returns error
-POST http://localhost:8110/api/v1/posts/1854e37bba3c023e372b7d930547b7c8
+POST :api/posts/:viewLinkID
 Content-Type: application/json
 
 {
@@ -81,7 +88,7 @@ Content-Type: application/json
 
 # Updating with an edit link to the post
 # Edits the post
-POST http://localhost:8110/api/v1/posts/a49ef12c507ec98527d80db9bba038cc
+POST :api/posts/:editLinkID
 Content-Type: application/json
 
 {
@@ -91,7 +98,7 @@ Content-Type: application/json
 
 # Updating with a unknown link
 # Returns error
-POST http://localhost:8110/api/v1/posts/thislinkisnotgonnawork
+POST :api/posts/:unknownLinkID
 Content-Type: application/json
 
 {
@@ -103,7 +110,7 @@ Content-Type: application/json
 
 # Reporting with a view link
 # Reports the post
-POST http://localhost:8110/api/v1/posts/report/1854e37bba3c023e372b7d930547b7c8
+POST :api/posts/report/:viewLinkID
 Content-Type: application/json
 
 {
@@ -112,7 +119,7 @@ Content-Type: application/json
 
 # Updating with an edit link to the post
 # Returns error
-POST http://localhost:8110/api/v1/posts/report/a49ef12c507ec98527d80db9bba038cc
+POST :api/posts/report/:editLinkID
 Content-Type: application/json
 
 {
@@ -122,7 +129,7 @@ Content-Type: application/json
 
 # Updating with a unknown link
 # Returns error
-POST http://localhost:8110/api/v1/posts/report/thislinkisnotgonnawork
+POST :api/posts/report/:unknownLinkID
 Content-Type: application/json
 
 {
@@ -134,12 +141,12 @@ Content-Type: application/json
 
 # Deleting the post using its view link
 # Returns Error  
-DELETE http://localhost:8110/api/v1/posts/1854e37bba3c023e372b7d930547b7c8
+DELETE :api/posts/:viewLinkID
 
 # Getting the post using its edit link
 # Deletes the post
-DELETE http://localhost:8110/api/v1/posts/6bfd47333328551745adf34dbb39c7fa
+DELETE :api/posts/:editLinkID
 
 # Getting the post with an unknown link
 # Returns error
-DELETE http://localhost:8110/api/v1/posts/thislinkisnotgonnawork
+DELETE :api/posts/:unknownLinkID
