@@ -43,8 +43,6 @@ type post struct {
 
 var db *sqlx.DB
 
-// ADD A MUTEX?########
-
 // Generate a random string of 32 characters
 func generateRandomString() string {
 	randomNum := strconv.Itoa(rand.Int())
@@ -148,22 +146,36 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Retrieve the value of the query parameter from the query string and return the value
+// and the associated error (if any)
+func getQueryValue(w http.ResponseWriter, r *http.Request, queryParameter string) (int, error) {
+	result, err := strconv.Atoi(r.URL.Query().Get(queryParameter))
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		log.Println("error: invalid", queryParameter)
+		return 0, err
+	}
+	return result, nil
+}
+
 // Retrieve all public posts that are not reported
 func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.RequestURI(), r.Method)
 
-	// Retrieve the page number from the query string
-	pageNum, err := strconv.Atoi(r.URL.Query().Get("page"))
+	// Retrieve the offset value from the query string
+	offset, err := getQueryValue(w, r, "offset")
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		log.Println("error: invalid page number")
+		return
+	}
+
+	// Retrieve the limit value from the query string
+	limit, err := getQueryValue(w, r, "limit")
+	if err != nil {
 		return
 	}
 
 	// Retrieve the public records from the database
-	limit := 5
 	entries := []post{}
-	offset := pageNum * limit
 
 	query := `SELECT title, body, epoch, Links.link_id 
 				FROM Posts p, Links
@@ -223,7 +235,6 @@ func handleDeletePost(w http.ResponseWriter, r *http.Request) {
 			log.Println("Successful data removal")
 		}
 	}
-
 }
 
 // Update the post with the given link if having edit access
@@ -370,7 +381,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Set up router
+	// Set up router and subrouter
 	r := mux.NewRouter()
 	apiRouter := r.PathPrefix("/api/v1").Subrouter()
 

@@ -47,17 +47,20 @@ Content-Type: application/json
 # Retrieving all posts end point
 # Accessing a valid page
 # For each post, their title, body, view link, and timestamp is sent by the server
-GET :api/posts?page=1
+GET :api/posts?offset=2&limit=2
 
 
 # Retrieving a page outside the bounds
 # Returns empty JSON array
-GET :api/posts?page=100
+GET :api/posts?offset=2&limit=2
 
 # Retrieving something from an invalid page number
 # Return error
 GET :api/posts?page=:unknownLinkID
 
+# Retrieving all posts without a query string
+# Return Bad Request response
+GET :api/posts
 
 # ======== Test Specific Post Retrieval End-Point ========
 
