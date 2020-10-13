@@ -82,6 +82,8 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+
 	if entry.Access == "View" { // View Access
 		// To avoid JSON encoding
 		entry.Scope = ""
@@ -176,6 +178,8 @@ func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 		entries[i].LinkID = path.Join(r.Host, r.URL.Path, entries[i].LinkID)
 	}
 
+	w.Header().Set("Content-Type", "application/json")
+
 	// Encode and Send Response To Client
 	err = json.NewEncoder(w).Encode(entries)
 	if err != nil {
@@ -230,7 +234,7 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 		updatedPostContents := post{}
 		err := json.NewDecoder(r.Body).Decode(&updatedPostContents)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			log.Println("error: JSON decoding error occured")
 			return
 		}
@@ -293,7 +297,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	newPost := post{}
 	err := json.NewDecoder(r.Body).Decode(&newPost)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		log.Println("error: decoding error occured")
 		return
 	}
@@ -318,6 +322,8 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 
 	// Encode and Send Response To Client
 	response := postLinks{EditLink: editLink, ViewLink: viewLink}
+	w.Header().Set("Content-Type", "application/json")
+
 	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -339,7 +345,7 @@ func handlePostReport(w http.ResponseWriter, r *http.Request) {
 		updatedPostContents := post{}
 		err := json.NewDecoder(r.Body).Decode(&updatedPostContents)
 		if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			log.Println("error: JSON decoding error occured")
 			return
 		}
@@ -373,8 +379,8 @@ func main() {
 	// For individual post
 	// ##########CHANGE IT TO PROPER REGEX FOR HEX
 	r.Path("/api/v1/posts/{*}").Methods("GET").HandlerFunc(handleRetrievePost)
-	r.Path("/api/v1/posts/{*}").Methods("UPDATE").HandlerFunc(handleUpdatePost)
-	r.Path("/api/v1/posts/report/{*}").Methods("UPDATE").HandlerFunc(handlePostReport)
+	r.Path("/api/v1/posts/{*}").Methods("POST").HandlerFunc(handleUpdatePost)
+	r.Path("/api/v1/posts/report/{*}").Methods("POST").HandlerFunc(handlePostReport)
 	r.Path("/api/v1/posts/{*}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
 	log.Fatal(http.ListenAndServe(":8110", r))
