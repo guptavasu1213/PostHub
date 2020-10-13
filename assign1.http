@@ -2,7 +2,7 @@
 # -*- restclient -*-
 
 #Variables
-:port = 8110
+:port = 8010
 :api = http://localhost::port/api/v1
 :viewLinkID = 1854e37bba3c023e372b7d930547b7c8
 :editLinkID = a49ef12c507ec98527d80db9bba038cc
@@ -72,7 +72,6 @@ GET :api/posts/:editLinkID
 # Getting the post with an unknown link
 # Returns error
 GET :api/posts/:unknownLinkID
-
 
 # ======== Test Post Updating End-Point ========
 

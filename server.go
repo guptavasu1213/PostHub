@@ -52,6 +52,7 @@ func generateRandomString() string {
 	return hex.EncodeToString(hash[:])
 }
 
+// Returns the scheme used
 func getRequestType(r *http.Request) string {
 	// Request type is nil when the request is http: https://github.com/golang/go/issues/28940
 	if r.TLS == nil {
@@ -147,7 +148,7 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Retrieve all public posts
+// Retrieve all public posts that are not reported
 func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.RequestURI(), r.Method)
 
@@ -326,6 +327,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Report the post based on the link
 func handlePostReport(w http.ResponseWriter, r *http.Request) {
 	entry, err := getEntryForRequestedLink(w, r)
 	if err != nil {
@@ -346,7 +348,7 @@ func handlePostReport(w http.ResponseWriter, r *http.Request) {
 		}
 		updatedPostContents.PostID = entry.PostID
 
-		// Reporting the post
+		// Report the post
 		query := `INSERT INTO REPORT (reason, post_id) VALUES (:reason, :post_id)`
 		_, err = db.NamedExec(query, updatedPostContents)
 		if err != nil {
@@ -359,24 +361,28 @@ func handlePostReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Set up the Database
 	var err error
 	db, err = sqlx.Connect("sqlite3", "assign1.db")
+	defer db.Close()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "cannot connect to database: %v\n", err)
 		os.Exit(1)
 	}
 
+	// Set up router
 	r := mux.NewRouter()
+	apiRouter := r.PathPrefix("/api/v1").Subrouter()
+
 	// For all posts
-	r.Path("/api/v1/posts").Methods("GET").HandlerFunc(handleRetrievePosts)
-	r.Path("/api/v1/posts").Methods("POST").HandlerFunc(handleCreatePost)
+	apiRouter.Path("/posts").Methods("GET").HandlerFunc(handleRetrievePosts)
+	apiRouter.Path("/posts").Methods("POST").HandlerFunc(handleCreatePost)
 
 	// For an individual post
-	// ##########CHANGE IT TO PROPER REGEX FOR HEX
-	r.Path("/api/v1/posts/{*}").Methods("GET").HandlerFunc(handleRetrievePost)
-	r.Path("/api/v1/posts/{*}").Methods("POST").HandlerFunc(handleUpdatePost)
-	r.Path("/api/v1/posts/report/{*}").Methods("POST").HandlerFunc(handlePostReport)
-	r.Path("/api/v1/posts/{*}").Methods("DELETE").HandlerFunc(handleDeletePost)
+	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]+}").Methods("GET").HandlerFunc(handleRetrievePost)
+	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]+}").Methods("POST").HandlerFunc(handleUpdatePost)
+	apiRouter.Path("/posts/report/{link_id:[0-9a-zA-Z]+}").Methods("POST").HandlerFunc(handlePostReport)
+	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]+}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
-	log.Fatal(http.ListenAndServe(":8110", r))
+	log.Fatal(http.ListenAndServe(":8010", r))
 }
