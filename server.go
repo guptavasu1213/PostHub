@@ -52,6 +52,14 @@ func generateRandomString() string {
 	return hex.EncodeToString(hash[:])
 }
 
+func getRequestType(r *http.Request) string {
+	// Request type is nil when the request is http: https://github.com/golang/go/issues/28940
+	if r.TLS == nil {
+		return "http://"
+	}
+	return "https://"
+}
+
 // Parse the URL to find the post link ID and scan the database for the corresponding entry
 func getEntryForRequestedLink(w http.ResponseWriter, r *http.Request) (post, error) {
 	lastIndex := strings.LastIndex(r.URL.Path, "/")
@@ -119,8 +127,8 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 		resourceWithoutLinkID := r.URL.Path[:lastSlashIndex]
 
 		links := postLinks{
-			EditLink: path.Join(r.Host, resourceWithoutLinkID, entry.LinkID),
-			ViewLink: path.Join(r.Host, resourceWithoutLinkID, viewID),
+			EditLink: getRequestType(r) + path.Join(r.Host, resourceWithoutLinkID, entry.LinkID),
+			ViewLink: getRequestType(r) + path.Join(r.Host, resourceWithoutLinkID, viewID),
 		}
 		entry.LinkID = ""
 
@@ -175,7 +183,7 @@ func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 
 	// Change Link ID to Links to the post
 	for i := range entries {
-		entries[i].LinkID = path.Join(r.Host, r.URL.Path, entries[i].LinkID)
+		entries[i].LinkID = getRequestType(r) + path.Join(r.Host, r.URL.Path, entries[i].LinkID)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -231,8 +239,7 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 		log.Println("error: view links cannot update posts")
 	} else { // Try post editing
 		// Decode Post Contents
-		updatedPostContents := post{}
-		err := json.NewDecoder(r.Body).Decode(&updatedPostContents)
+		err := json.NewDecoder(r.Body).Decode(&entry)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			log.Println("error: JSON decoding error occured")
@@ -240,26 +247,14 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Generate the query based on the fields passed
-		query := `UPDATE Posts SET `
+		query := `UPDATE Posts 
+					SET title=:title, body=:body, scope=:scope
+					WHERE post_id=:post_id`
 
-		if updatedPostContents.Title != "" {
-			query += `title=:title, `
-		}
-		if updatedPostContents.Body != "" {
-			query += `body=:body, `
-		}
-		if updatedPostContents.Scope != "" {
-			query += `scope=:scope `
-		}
-
-		query += `WHERE post_id=:post_id`
-		fmt.Println(query)
-
-		updatedPostContents.PostID = entry.PostID
-		_, err = db.NamedExec(query, updatedPostContents)
+		_, err = db.NamedExec(query, entry)
 		if err != nil {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			log.Println("error: unsuccessful entry update", err)
+			log.Println("error: unsuccessful entry update")
 		} else {
 			log.Println("Data updated successfully")
 		}
@@ -317,8 +312,8 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	editID := addLinkIDToDatabase(w, generateRandomString(), postID, "Edit")
 	viewID := addLinkIDToDatabase(w, generateRandomString(), postID, "View")
 
-	editLink := path.Join(r.Host, r.RequestURI, editID)
-	viewLink := path.Join(r.Host, r.RequestURI, viewID)
+	editLink := getRequestType(r) + path.Join(r.Host, r.RequestURI, editID)
+	viewLink := getRequestType(r) + path.Join(r.Host, r.RequestURI, viewID)
 
 	// Encode and Send Response To Client
 	response := postLinks{EditLink: editLink, ViewLink: viewLink}
@@ -376,7 +371,7 @@ func main() {
 	r.Path("/api/v1/posts").Methods("GET").HandlerFunc(handleRetrievePosts)
 	r.Path("/api/v1/posts").Methods("POST").HandlerFunc(handleCreatePost)
 
-	// For individual post
+	// For an individual post
 	// ##########CHANGE IT TO PROPER REGEX FOR HEX
 	r.Path("/api/v1/posts/{*}").Methods("GET").HandlerFunc(handleRetrievePost)
 	r.Path("/api/v1/posts/{*}").Methods("POST").HandlerFunc(handleUpdatePost)
