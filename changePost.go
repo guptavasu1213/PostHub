@@ -79,6 +79,13 @@ func handleUpdatePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Error Check Null Fields
+		if entry.Title == "" || entry.Body == "" || entry.Scope == "" {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			log.Println("error: all fields are required and should be non-null")
+			return
+		}
+
 		// Generate the query based on the fields passed
 		query := `UPDATE Posts 
 					SET title=:title, body=:body, scope=:scope
@@ -126,7 +133,13 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&newPost)
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		log.Println("error: decoding error occured")
+		log.Println("error: decoding error occured", err)
+		return
+	}
+	// Error Check Null Fields
+	if newPost.Title == "" || newPost.Body == "" || newPost.Scope == "" {
+		http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		log.Println("error: all fields are required and should be non-null")
 		return
 	}
 	// Insert data in posts table
@@ -179,6 +192,13 @@ func handlePostReport(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		updatedPostContents.PostID = entry.PostID
+
+		// Error Check Null Field
+		if updatedPostContents.ReportReason == "" {
+			http.Error(w, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			log.Println("error: all fields are required and should be non-null")
+			return
+		}
 
 		// Report the post
 		query := `INSERT INTO REPORT (reason, post_id) VALUES (:reason, :post_id)`

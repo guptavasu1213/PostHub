@@ -4,8 +4,8 @@
 #Variables
 :port = 8010
 :api = http://localhost::port/api/v1
-:viewLinkID = 1854e37bba3c023e372b7d930547b7c8
-:editLinkID = a49ef12c507ec98527d80db9bba038cc
+:viewLinkID = d0e74d150c680b3394e5a0deac1ea129
+:editLinkID = 21f98c353a1f60484c4fb3f1421d78f5
 :unknownLinkID = thisIsNotGonnaWork
 
 # ======== Test Post Creation End-Point ========
@@ -21,7 +21,7 @@ Content-Type: application/json
 }
 
 # Create post with null values
-# Reports Error ##############
+# Reports Bad Request Error
 POST :api/posts
 Content-Type: application/json
 
@@ -32,7 +32,7 @@ Content-Type: application/json
 }
 
 # Create post with incorrect JSON. The JSON is missing a comma's. 
-# Reports error.
+# Reports Bad Request error.
 POST :api/posts
 Content-Type: application/json
 
@@ -52,10 +52,10 @@ GET :api/posts?offset=2&limit=2
 
 # Retrieving a page outside the bounds
 # Returns empty JSON array
-GET :api/posts?offset=2&limit=2
+GET :api/posts?offset=2000&limit=2
 
 # Retrieving something from an invalid page number
-# Return error
+# Return Bad Request error
 GET :api/posts?page=:unknownLinkID
 
 # Retrieving all posts without a query string
@@ -73,13 +73,13 @@ GET :api/posts/:viewLinkID
 GET :api/posts/:editLinkID
 
 # Getting the post with an unknown link
-# Returns error
+# Returns Not Found error
 GET :api/posts/:unknownLinkID
 
 # ======== Test Post Updating End-Point ========
 
 # Updating with a view link
-# Returns error
+# Returns forbidden error
 POST :api/posts/:viewLinkID
 Content-Type: application/json
 
@@ -99,12 +99,22 @@ Content-Type: application/json
 }
 
 # Updating with a unknown link
-# Returns error
+# Returns Not Found error
 POST :api/posts/:unknownLinkID
 Content-Type: application/json
 
 {
 	"title" : "This is the new title", 
+	"scope" : "Public"
+}
+
+# Updating with an edit link to the post with a null title
+# Reports Bad Request error
+POST :api/posts/:editLinkID
+Content-Type: application/json
+
+{
+	"title" : null, 
 	"scope" : "Public"
 }
 
@@ -119,6 +129,15 @@ Content-Type: application/json
 	"reason" : "Inappropriate Content"
 }
 
+# Reporting with a view link and null reason
+# Reports bad request error
+POST :api/posts/report/:viewLinkID
+Content-Type: application/json
+
+{
+	"reason" : null
+}
+
 # Updating with an edit link to the post
 # Returns error
 POST :api/posts/report/:editLinkID
@@ -130,7 +149,7 @@ Content-Type: application/json
 
 
 # Updating with a unknown link
-# Returns error
+# Returns Not Found error
 POST :api/posts/report/:unknownLinkID
 Content-Type: application/json
 
@@ -142,7 +161,7 @@ Content-Type: application/json
 # ======== Test Post Deletion End-Point ========
 
 # Deleting the post using its view link
-# Returns Error  
+# Returns Forbidden Error  
 DELETE :api/posts/:viewLinkID
 
 # Getting the post using its edit link
@@ -150,5 +169,5 @@ DELETE :api/posts/:viewLinkID
 DELETE :api/posts/:editLinkID
 
 # Getting the post with an unknown link
-# Returns error
+# Returns Not Found error
 DELETE :api/posts/:unknownLinkID
