@@ -1,0 +1,46 @@
+<!-- CMPT 315 (Fall 2020)
+     Assignment 2
+     Author: Vasu Gupta
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Create Post</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>Submit a Post</h1>
+    <div class="form-container">
+        <form>
+            <div class="post-container">
+                <label class="label" for="title">Title</label><br>
+                <input class="textbox" type="text" id="title" name="title" placeholder="Your Message Title"
+                    required><br>
+                <label class="label" for="body">Body</label><br>
+                <textarea class="textbox" name="body" id="body" cols="30" rows="10" placeholder="Your Message"
+                    required></textarea>
+            </div>
+
+            <div class="buttons">
+                <div class="radio-buttons">
+                    <input type="radio" name="scope" id="public" value="Public">
+                    <label for="public">Public</label>
+    
+                    <input type="radio" name="scope" id="private" value="Private">
+                    <label for="private">Private</label>
+                </div>    
+
+				<input class="button" type="submit" value="Submit">
+            </div>
+        </form>
+    </div>
+
+    <!-- <script src="doT.js"></script> -->
+    <!-- <script src="lab5.js"></script> -->
+</body>
+
+</html>
