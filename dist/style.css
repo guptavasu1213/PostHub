@@ -58,6 +58,7 @@ input[type=radio]{
 .buttons .button{
     font: normal bold 15px "Raleway";
     text-transform: uppercase;
+    text-align: center;
 
     background-color: rgb(204, 204, 204);
 

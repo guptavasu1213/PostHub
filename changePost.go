@@ -158,7 +158,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	editID := addLinkIDToDatabase(w, generateRandomString(), postID, "Edit")
 	viewID := addLinkIDToDatabase(w, generateRandomString(), postID, "View")
 
-	editLink := getRequestType(r) + path.Join(r.Host, r.RequestURI, editID)
+	editLink := editID
 	viewLink := getRequestType(r) + path.Join(r.Host, r.RequestURI, viewID)
 
 	// Encode and Send Response To Client

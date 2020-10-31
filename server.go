@@ -14,6 +14,10 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// func showPostPage(w http.ResponseWriter, r *http.Request) {
+// 	http.FileServer(http.Dir("dist"))
+// }
+
 func main() {
 	// Set up the Database
 	var err error
@@ -38,5 +42,13 @@ func main() {
 	apiRouter.Path("/posts/report/{link_id:[0-9a-zA-Z]+}").Methods("POST").HandlerFunc(handlePostReport)
 	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]+}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
-	log.Fatal(http.ListenAndServe(":8010", r))
+	// Serve files
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("dist")))
+	r.PathPrefix("/posts/{link_id:[0-9a-zA-Z]+}").HandlerFunc(showPostPage)
+
+	portNumber := ":8010"
+
+	fmt.Println("listening on port", portNumber)
+
+	log.Fatal(http.ListenAndServe(portNumber, r))
 }
