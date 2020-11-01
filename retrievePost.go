@@ -4,12 +4,94 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"path"
 	"strconv"
 	"strings"
 )
+
+// Extract view ID for a post using Post ID
+func getViewIDFromPostID(w http.ResponseWriter, postID int64) (string, error) {
+	var viewID string
+
+	query := `SELECT link_id 
+						FROM Links
+						WHERE post_id = $1 and access = "View"`
+	err := db.Get(&viewID, query, postID)
+	if err == sql.ErrNoRows {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		fmt.Println("no Entries found")
+		return "", err
+	} else if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		fmt.Println("unsuccessful data lookup")
+		return "", err
+	}
+	return viewID, nil
+}
+
+func retrieveReadonlyPostPage(w http.ResponseWriter, entry post) {
+	// Creating HTML template
+	template, err := template.ParseFiles("dist/publicPortal.html")
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError)+": Error in template parsing", http.StatusInternalServerError)
+		log.Println("error: could not generate html template")
+		return
+	}
+
+	// Add struct values to the template
+	template.Execute(w, entry)
+}
+
+// Serve HTML template of the Admin Portal to the client
+func retrieveAdminPostPage(w http.ResponseWriter, r *http.Request, entry post) {
+	// Creating HTML template
+	template, err := template.ParseFiles("dist/adminPortal.html")
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError)+": Error in template parsing", http.StatusInternalServerError)
+		log.Println("error: could not generate html template")
+		return
+	}
+
+	// Retrieving the view id of the post
+	viewID, err := getViewIDFromPostID(w, entry.PostID)
+	if err != nil {
+		return
+	}
+
+	links := postLinks{
+		EditLink: path.Join(r.Host, "posts", entry.LinkID),
+		ViewLink: path.Join(r.Host, "posts", viewID),
+	}
+
+	// Combine the post and links structs
+	combinedStruct := struct {
+		post
+		postLinks
+	}{entry, links}
+
+	// Add struct values to the template
+	template.Execute(w, combinedStruct)
+}
+
+// Serve HTML template of the post to the client
+func serveIndividualPostPage(w http.ResponseWriter, r *http.Request) {
+	entry, err := getEntryForRequestedLink(w, r)
+	if err != nil {
+		return
+	}
+
+	if entry.Access == "View" {
+		log.Println("VIEW ACCESS")
+		retrieveReadonlyPostPage(w, entry)
+
+	} else { // Edit Access
+		log.Println("EDIT ACCESS")
+		retrieveAdminPostPage(w, r, entry)
+	}
+}
 
 // Retrieve a individual post based on the links
 func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
@@ -36,20 +118,8 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else { // Edit Access
-		// look up the view-id
-		var viewID string
-
-		query := `SELECT link_id 
-					FROM Links
-					WHERE post_id = $1 and access = "View"`
-		err = db.Get(&viewID, query, entry.PostID)
-		if err == sql.ErrNoRows {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-			fmt.Println("no Entries found")
-			return
-		} else if err != nil {
-			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			fmt.Println("unsuccessful data lookup")
+		viewID, err := getViewIDFromPostID(w, entry.PostID)
+		if err != nil {
 			return
 		}
 

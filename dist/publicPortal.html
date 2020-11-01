@@ -1,0 +1,36 @@
+<!-- CMPT 315 (Fall 2020)
+     Assignment 2
+     Author: Vasu Gupta
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Public Portal</title>
+
+    <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+    <h1>Public Post View</h1>
+    <div class="form-container">
+        <form id="post-submission-form">
+            <div class="post-container">
+                <label class="label" for="title">Title</label><br>
+                <input class="textbox" type="text" id="title" name="title" value="{{.Title}}" readonly><br>
+
+                <label class="label" for="body">Body</label><br>
+                <textarea class="textbox" name="body" id="body" rows="10" readonly>{{.Body}}</textarea>
+            </div>
+
+            <div class="buttons">
+				<input id="report" class="button" type="button" value="Report">
+            </div>
+        </form>
+    </div>
+
+    <!-- <script src="publicPortal.js"></script> -->
+</body>
+
+</html>

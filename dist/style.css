@@ -50,8 +50,11 @@ input[type=radio]{
     margin-left: 1rem;
 }
 
-.buttons .radio-buttons{
+.buttons {
     font: normal 600 15px "Raleway";
+}
+
+.buttons .radio-buttons{
     margin: 1rem 0px;
 }
 

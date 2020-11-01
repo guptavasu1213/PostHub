@@ -1,6 +1,6 @@
 // Vasu Gupta
 // ID: 3066521
-// Assignment 1
+// Assignment 2
 
 package main
 
@@ -13,10 +13,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 )
-
-// func showPostPage(w http.ResponseWriter, r *http.Request) {
-// 	http.FileServer(http.Dir("dist"))
-// }
 
 func main() {
 	// Set up the Database
@@ -37,14 +33,14 @@ func main() {
 	apiRouter.Path("/posts").Methods("POST").HandlerFunc(handleCreatePost)
 
 	// For an individual post
-	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]+}").Methods("GET").HandlerFunc(handleRetrievePost)
-	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]+}").Methods("POST").HandlerFunc(handleUpdatePost)
-	apiRouter.Path("/posts/report/{link_id:[0-9a-zA-Z]+}").Methods("POST").HandlerFunc(handlePostReport)
-	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]+}").Methods("DELETE").HandlerFunc(handleDeletePost)
+	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("GET").HandlerFunc(handleRetrievePost)
+	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("POST").HandlerFunc(handleUpdatePost)
+	apiRouter.Path("/posts/report/{link_id:[0-9a-zA-Z]{32}}").Methods("POST").HandlerFunc(handlePostReport)
+	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
 	// Serve files
+	r.PathPrefix("/posts/{link_id:[0-9a-zA-Z]{32}}").HandlerFunc(serveIndividualPostPage)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("dist")))
-	r.PathPrefix("/posts/{link_id:[0-9a-zA-Z]+}").HandlerFunc(showPostPage)
 
 	portNumber := ":8010"
 

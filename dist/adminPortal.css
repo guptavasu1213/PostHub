@@ -1,0 +1,9 @@
+.links{
+    margin: 2% 10%;
+}
+
+.links .link{
+    margin: 0rem 3rem;
+    resize: none;
+    width: 70%;
+}
