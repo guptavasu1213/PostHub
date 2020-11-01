@@ -58,7 +58,7 @@ input[type=radio]{
     margin: 1rem 0px;
 }
 
-.buttons .button{
+.button{
     font: normal bold 15px "Raleway";
     text-transform: uppercase;
     text-align: center;
@@ -75,7 +75,7 @@ input[type=radio]{
     transition-property: background-color, color; 
 }
 
-.buttons .button:hover{
+.button:hover{
     color: white;
     background-color: black;
 }
