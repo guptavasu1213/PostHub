@@ -30,8 +30,8 @@ function sendPostToServer(): void {
         if (resp.ok) {
             return resp.json()
         } else {
-            alert("Error: The post could not be created!")
             console.log("post creation error:", resp.status, resp.statusText);
+            alert("Error: The post could not be created!")
         }
     }).then(json =>{
         if (json !== undefined){
@@ -49,7 +49,6 @@ function attachCreationListeners() {
     let submitBtn = document.querySelector("#submit");
 
     submitBtn?.addEventListener("click", function (e) {
-        e.preventDefault();
         sendPostToServer();
     });
 }
