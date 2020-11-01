@@ -20,7 +20,7 @@
             <div class="post-container">
                 <label class="label" for="title">Title</label><br>
                 <input required class="textbox" type="text" id="title" name="title" value="{{.Title}}"><br>
-                
+
                 <label class="label" for="body">Body</label><br>
                 <textarea required class="textbox" name="body" id="body" rows="10">{{.Body}}</textarea>
             </div>
@@ -36,10 +36,10 @@
 
                 <div class="links">
                     <label>View Link</label>
-                    <textarea readonly class="link" id="viewLink" rows="1">{{.EditLink}}</textarea><br>
+                    <textarea readonly class="link" id="viewLink" rows="1">{{.ViewLink}}</textarea><br>
 
                     <label>Administrator Link</label>
-                    <textarea readonly class="link" id="editLink" rows="1">{{.ViewLink}}</textarea>
+                    <textarea readonly class="link" id="editLink" rows="1">{{.EditLink}}</textarea>
                 </div>
 
                 <input id="update" class="button" type="submit" value="Update">
@@ -48,7 +48,7 @@
         </form>
     </div>
 
-    <!-- <script src="adminPortal.js"></script> -->
+    <script src="/adminPortal.js"></script>
 </body>
 
 </html>

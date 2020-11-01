@@ -24,21 +24,24 @@ function sendPostToServer() {
             return resp.json();
         }
         else {
+            alert("Error: The post could not be created!");
             console.log("post creation error:", resp.status, resp.statusText);
         }
     }).then(json => {
         if (json !== undefined) {
+            alert("Post Creation Successful!");
             redirectToAdminPage(json);
         }
     }).catch(error => {
+        alert("Error: The post could not be created!");
         console.log(error);
     });
 }
-function attachFormListeners() {
+function attachCreationListeners() {
     let submitBtn = document.querySelector("#submit");
     submitBtn === null || submitBtn === void 0 ? void 0 : submitBtn.addEventListener("click", function (e) {
         e.preventDefault();
         sendPostToServer();
     });
 }
-attachFormListeners();
+attachCreationListeners();

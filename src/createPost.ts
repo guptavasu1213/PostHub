@@ -4,6 +4,7 @@ function redirectToAdminPage(json: any) {
     window.location.href = link;
 }
 
+// Create post and send to server
 function sendPostToServer(): void {
     let title = (<HTMLInputElement>document.querySelector('#title')).value;
     let body = (<HTMLInputElement>document.querySelector('#body')).value;
@@ -29,18 +30,22 @@ function sendPostToServer(): void {
         if (resp.ok) {
             return resp.json()
         } else {
+            alert("Error: The post could not be created!")
             console.log("post creation error:", resp.status, resp.statusText);
         }
     }).then(json =>{
         if (json !== undefined){
+            alert("Post Creation Successful!")
             redirectToAdminPage(json);
         }
     }).catch(error => {
+        alert("Error: The post could not be created!")
         console.log(error);
     });
 }
 
-function attachFormListeners() {
+// Attach button listeners on creation page
+function attachCreationListeners() {
     let submitBtn = document.querySelector("#submit");
 
     submitBtn?.addEventListener("click", function (e) {
@@ -49,4 +54,4 @@ function attachFormListeners() {
     });
 }
 
-attachFormListeners();
+attachCreationListeners();
