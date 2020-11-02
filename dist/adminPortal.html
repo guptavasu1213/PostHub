@@ -26,11 +26,14 @@
             </div>
 
             <div class="buttons">
+                <!-- Use Golang template to select the radio button that was selected -->
                 <div class="radio-buttons">
-                    <input type="radio" name="scope" id="public" value="Public"  {{ if eq "Public" .Scope}} checked="checked" {{ end }} >
+                    <input type="radio" name="scope" id="public" value="Public" {{ if eq "Public" .Scope}}
+                        checked="checked" {{ end }}>
                     <label for="public">Public</label>
 
-                    <input type="radio" name="scope" id="private" value="Private" {{ if eq "Private" .Scope}} checked="checked" {{ end }}>
+                    <input type="radio" name="scope" id="private" value="Private" {{ if eq "Private" .Scope}}
+                        checked="checked" {{ end }}>
                     <label for="private">Private</label>
                 </div>
 

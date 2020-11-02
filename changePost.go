@@ -109,7 +109,7 @@ func addLinkIDToDatabase(w http.ResponseWriter, linkID string, postID int64, acc
 			linkID = addLinkIDToDatabase(w, generateRandomString(), postID, access)
 		} else {
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			fmt.Errorf("post creation unsuccessful")
+			fmt.Println("post creation unsuccessful")
 		}
 	}
 	return linkID

@@ -1,4 +1,4 @@
-body{
+body {
     text-align: center;
 }
 
@@ -6,26 +6,22 @@ table {
     width: 100%;
     margin: 15px;
     padding: 20px;
-
     border: 2px solid black;
 }
 
-.row-headings{
+.row-headings {
     font-size: 1.5rem;
 }
 
-td a{
+td a {
     text-decoration: none;
     color: black;
     font-size: large;
-
     width: 400px;
-
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
-    display: block; 
+    display: block;
     padding: 0.5rem 1rem;
 }
 
@@ -33,22 +29,19 @@ th, td {
     border-bottom: 0.1px solid black;
 }
 
-#table-content{
+#table-content {
     margin: 2% 15%;
 }
 
-#table-content p{
+#table-content p {
     margin: 20px 0px;
-
     font-size: large;
 }
 
-footer{
+footer {
     font-size: large;
     color: white;
-
     background-color: black;
-
     padding: 0.5rem 0rem;
     width: 100%;
 }

@@ -39,8 +39,8 @@ func main() {
 	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
 	// Serve files
-	r.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").HandlerFunc(serveIndividualPostPage)
-	r.Path("/posts").HandlerFunc(getPostsPage)
+	r.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").HandlerFunc(handleIndividualPageServing)
+	r.Path("/posts").HandlerFunc(handlerToRetrieveAllPostsPage)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("dist")))
 
 	portNumber := ":8010"

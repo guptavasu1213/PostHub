@@ -7,10 +7,14 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path"
 	"strconv"
 )
 
-func getPostsPage(w http.ResponseWriter, r *http.Request) {
+// Serves the page containing all the posts through the response writer
+func handlerToRetrieveAllPostsPage(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL.RequestURI(), r.Method)
+
 	http.ServeFile(w, r, "./dist/allPosts.html")
 }
 
@@ -34,6 +38,7 @@ func getViewIDFromPostID(w http.ResponseWriter, postID int64) (string, error) {
 	return viewID, nil
 }
 
+// Serve HTML template of the View Only page to the client
 func retrieveReadonlyPostPage(w http.ResponseWriter, entry post) {
 	// Creating HTML template
 	template, err := template.ParseFiles("dist/publicPortal.html")
@@ -64,8 +69,8 @@ func retrieveAdminPostPage(w http.ResponseWriter, r *http.Request, entry post) {
 	}
 
 	links := postLinks{
-		EditLink: entry.LinkID,
-		ViewLink: viewID,
+		EditLink: path.Join(r.Host, "posts", entry.LinkID),
+		ViewLink: path.Join(r.Host, "posts", viewID),
 	}
 
 	// Combine the post and links structs
@@ -78,19 +83,21 @@ func retrieveAdminPostPage(w http.ResponseWriter, r *http.Request, entry post) {
 	template.Execute(w, combinedStruct)
 }
 
-// Serve HTML template of the post to the client
-func serveIndividualPostPage(w http.ResponseWriter, r *http.Request) {
+// Handler for serving HTML template of the post to the client
+func handleIndividualPageServing(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL.RequestURI(), r.Method)
+
 	entry, err := getEntryForRequestedLink(w, r)
 	if err != nil {
 		return
 	}
 
 	if entry.Access == "View" {
-		log.Println("VIEW ACCESS")
+		log.Println("View Access")
 		retrieveReadonlyPostPage(w, entry)
 
 	} else { // Edit Access
-		log.Println("EDIT ACCESS")
+		log.Println("Edit Access")
 		retrieveAdminPostPage(w, r, entry)
 	}
 }

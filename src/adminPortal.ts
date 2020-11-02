@@ -7,11 +7,12 @@ function deletePost(): void {
             alert("Post successfully deleted");
             window.location.href = "/posts";
         } else {
-            alert("Error: The post did not get deleted");
             console.log("post deletion error:", resp.status, resp.statusText);
+            alert("Error: The post did not get deleted");
         }
     }).catch(error => {
         console.log(error);
+        alert("Error: The post did not get deleted");
     });
 }
 
@@ -42,11 +43,12 @@ function updatePost(): void {
             alert("Post successfully updated");
             location.reload();
         } else {
-            alert("Error: The post did not get updated");
             console.log("post updation error:", resp.status, resp.statusText);
+            alert("Error: The post did not get updated");
         }
     }).catch(error => {
         console.log(error);
+        alert("Error: The post did not get updated");
     });
 }
 
@@ -54,7 +56,7 @@ function updatePost(): void {
 function attachUpdationListeners(): void {
     let postForm = document.querySelector("#post-submission-form");
     let deleteBtn = document.querySelector("#delete");
-    console.log("s")
+
     postForm?.addEventListener("submit", function (e) {
         e.preventDefault();
         updatePost();

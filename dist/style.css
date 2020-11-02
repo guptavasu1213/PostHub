@@ -1,52 +1,50 @@
 @import url('https://fonts.googleapis.com/css2?family=Raleway&display=swap');
-
 /* Remove all the default padding */
-*{
-    padding:0;
+
+* {
+    padding: 0;
     margin: 0;
     box-sizing: border-box;
 }
 
-h1{
+h1 {
     font: normal 600 5vmin "Raleway";
     text-transform: uppercase;
     text-align: center;
     margin: 3rem;
 }
 
-.form-container{
+.form-container {
     margin: 0% 20%;
 }
 
-.post-container{
+.post-container {
     background-color: rgb(204, 204, 204);
-
     padding: 3% 10%;
 }
 
-.label{
+.label {
     font: normal bold 25px "Raleway";
 }
 
-.textbox{
+.textbox {
     font: normal normal 15px "Raleway";
     outline: none;
-
     width: 100%;
     margin: 10px 0px;
     padding: 10px 5px;
 }
 
-.textbox::placeholder{
+.textbox::placeholder {
     font-weight: bold;
 }
 
-.buttons{
+.buttons {
     text-align: center;
     margin: 1rem 0rem;
 }
 
-input[type=radio]{
+input[type=radio] {
     margin-left: 1rem;
 }
 
@@ -54,28 +52,24 @@ input[type=radio]{
     font: normal 600 15px "Raleway";
 }
 
-.buttons .radio-buttons{
+.buttons .radio-buttons {
     margin: 1rem 0px;
 }
 
-.button{
+.button {
     font: normal bold 15px "Raleway";
     text-transform: uppercase;
     text-align: center;
-
     background-color: rgb(204, 204, 204);
-
     border-radius: 5px;
     border: transparent;
-    
     padding: 0.5rem 2rem;
     margin: 0.5rem 1rem;
-
     transition: .3s ease;
-    transition-property: background-color, color; 
+    transition-property: background-color, color;
 }
 
-.button:hover{
+.button:hover {
     color: white;
     background-color: black;
 }

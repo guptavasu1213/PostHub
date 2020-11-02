@@ -1,6 +1,10 @@
+// CMPT 315 (Fall 2020)
+// Assignment 2
+// Author: Vasu Gupta
+
+// Redirects to Admin View Page
 function redirectToAdminPage(json: any) {
     let link = '/posts/' + json.editLink;
-    console.log("redirect to:", link, json)
     window.location.href = link;
 }
 
@@ -28,26 +32,26 @@ function sendPostToServer(): void {
         }
     }).then(resp => {
         if (resp.ok) {
-            return resp.json()
+            return resp.json();
         } else {
             console.log("post creation error:", resp.status, resp.statusText);
-            alert("Error: The post could not be created!")
+            alert("Error: The post could not be created!");
         }
-    }).then(json =>{       
-        if (json !== undefined){
-            alert("Post Creation Successful!")
+    }).then(json => {
+        if (json !== undefined) {
+            alert("Post Creation Successful!");
             redirectToAdminPage(json);
         }
     }).catch(error => {
         console.log(error);
-        alert("Error: The post could not be created!")
+        alert("Error: The post could not be created!");
     });
 }
 
 // Attach button listeners on creation page
 function attachCreationListeners() {
     let postForm = document.querySelector("#post-submission-form");
-    
+
     postForm?.addEventListener("submit", function (e) {
         e.preventDefault();
         sendPostToServer();

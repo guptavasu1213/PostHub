@@ -25,12 +25,12 @@ function reportPost() {
             window.location.href = "/posts";
         }
         else {
-            alert("Error: The post could not be reported");
             console.log("post reporting error:", resp.status, resp.statusText);
+            alert("Error: The post could not be reported");
         }
     }).catch(error => {
-        alert("Error: The post could not be reported");
         console.log(error);
+        alert("Error: The post could not be reported");
     });
 }
 function showPopup() {

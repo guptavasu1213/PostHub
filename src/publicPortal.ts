@@ -1,3 +1,7 @@
+// CMPT 315 (Fall 2020)
+// Assignment 2
+// Author: Vasu Gupta
+
 // Report the post
 function reportPost(): void {
     let reportReason = (<HTMLInputElement>document.querySelector('input[name="report"]:checked')).value;
@@ -33,12 +37,12 @@ function reportPost(): void {
             alert("Post Reporting Successful!");
             window.location.href = "/posts";
         } else {
-            alert("Error: The post could not be reported");
             console.log("post reporting error:", resp.status, resp.statusText);
+            alert("Error: The post could not be reported");
         }
     }).catch(error => {
-        alert("Error: The post could not be reported");
         console.log(error);
+        alert("Error: The post could not be reported");
     });
 }
 
