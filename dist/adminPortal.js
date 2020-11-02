@@ -5,7 +5,7 @@ function deletePost() {
     }).then(resp => {
         if (resp.ok) {
             alert("Post successfully deleted");
-            window.location.href = "/posts";
+            redirectToViewAllPostsPage();
         }
         else {
             console.log("post deletion error:", resp.status, resp.statusText);

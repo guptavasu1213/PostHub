@@ -9,8 +9,8 @@
 	<meta charset="utf-8">
 	<title>Home Page</title>
 
-	<link rel="stylesheet" href="style.css">
-	<link rel="stylesheet" href="allPosts.css">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="stylesheet" type="text/css" href="allPosts.css">
 
 
 	<script type="text/x-dot-template" id="posts-template">
@@ -47,14 +47,20 @@
 </head>
 
 <body>
-	<h1>All Posts</h1>
+	<section class="main-content">
+		<div class="nav-bar">
+			<input id="create-new" class="button nav-button" type="button" value="Create New Post">
+			<input id="view-all" class="button nav-button" type="button" value="View All Posts">
+		</div>
 
-	<input id="create-post" class="button" type="button" value="Create New Post">
+		<h1>All Posts</h1>
 
-	<div id="table-content"></div>
+		<div id="table-content"></div>
+	</section>
 
 	<footer>Designed and Created by Vasu Gupta</footer>
 
+	<script src="navBar.js"></script>
 	<script src="doT.js"></script>
 	<script src="allPosts.js"></script>
 </body>

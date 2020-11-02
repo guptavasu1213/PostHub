@@ -9,50 +9,61 @@
     <meta charset="utf-8">
     <title>Public Portal</title>
 
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="/publicPortal.css">
+    <link rel="stylesheet" type="text/css" href="/style.css">
+    <link rel="stylesheet" type="text/css" href="/publicPortal.css">
 </head>
 
 <body>
-    <h1>Public Post View</h1>
-    <div class="form-container">
-        <form id="post-submission-form">
-            <div class="post-container">
-                <label class="label" for="title">Title</label><br>
-                <input readonly class="textbox" type="text" id="title" name="title" value="{{.Title}}"><br>
+    <section class="main-content">
+        <div class="nav-bar">
+            <input id="create-new" class="button nav-button" type="button" value="Create New Post">
+            <input id="view-all" class="button nav-button" type="button" value="View All Posts">
+        </div>
 
-                <label class="label" for="body">Body</label><br>
-                <textarea readonly class="textbox" name="body" id="body" rows="10">{{.Body}}</textarea>
-            </div>
+        <h1>Public Post View</h1>
+        <div class="form-container">
+            <form id="post-submission-form">
+                <div class="post-container">
+                    <label class="label" for="title">Title</label><br>
+                    <input readonly class="textbox" type="text" id="title" name="title" value="{{.Title}}"><br>
 
-            <div class="buttons">
-                <input id="report" class="button" type="button" value="Report">
-            </div>
-        </form>
-    </div>
-
-    <!-- Popup for post reporting -->
-    <div class="popup">
-        <div class="content">
-            <h2>Post Reporting</h2>
-            <form class="form" action="">
-                <input type="radio" name="report" id="inappropriate" value="Inappropriate Content" checked="checked">
-                <label for="inappropriate">Inappropriate Content</label> <br>
-
-                <input type="radio" name="report" id="violation" value="Violating Community Guidelines">
-                <label for="violation">Violating Community Guidelines</label><br>
-
-                <input type="radio" name="report" id="other" value="Other">
-                <textarea name="report" id="other-report" rows="3" placeholder="Other"></textarea>
+                    <label class="label" for="body">Body</label><br>
+                    <textarea readonly class="textbox" name="body" id="body" rows="10">{{.Body}}</textarea>
+                </div>
 
                 <div class="buttons">
-                    <input id="submit" class="button" type="button" value="Submit">
-                    <input id="cancel" class="button" type="button" value="Cancel">
+                    <input id="report" class="button" type="button" value="Report">
                 </div>
             </form>
         </div>
-    </div>
 
+        <!-- Popup for post reporting -->
+        <div class="popup">
+            <div class="content">
+                <h2>Post Reporting</h2>
+                <form class="form" action="">
+                    <input type="radio" name="report" id="inappropriate" value="Inappropriate Content"
+                        checked="checked">
+                    <label for="inappropriate">Inappropriate Content</label> <br>
+
+                    <input type="radio" name="report" id="violation" value="Violating Community Guidelines">
+                    <label for="violation">Violating Community Guidelines</label><br>
+
+                    <input type="radio" name="report" id="other" value="Other">
+                    <textarea name="report" id="other-report" rows="3" placeholder="Other"></textarea>
+
+                    <div class="buttons">
+                        <input id="submit" class="button" type="button" value="Submit">
+                        <input id="cancel" class="button" type="button" value="Cancel">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>Designed and Created by Vasu Gupta</footer>
+
+    <script src="/navBar.js"></script>
     <script src="/publicPortal.js"></script>
 </body>
 

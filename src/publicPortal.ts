@@ -35,7 +35,7 @@ function reportPost(): void {
     }).then(resp => {
         if (resp.ok) {
             alert("Post Reporting Successful!");
-            window.location.href = "/posts";
+            redirectToViewAllPostsPage();
         } else {
             console.log("post reporting error:", resp.status, resp.statusText);
             alert("Error: The post could not be reported");

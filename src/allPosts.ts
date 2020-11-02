@@ -77,11 +77,6 @@ function attachButtonHandlers(): void {
     previousBtn?.addEventListener("click", previousTablePage);
 }
 
-// Redirect to the page for creating posts
-function redirectToPostCreationPage(): void {
-    window.location.href = "/";
-}
-
-document.querySelector("#create-post")?.addEventListener("click", redirectToPostCreationPage);
+document.querySelector("#create-new")?.addEventListener("click", redirectToPostCreationPage);
 
 getDataAndFillTable();

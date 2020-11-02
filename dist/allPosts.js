@@ -57,8 +57,5 @@ function attachButtonHandlers() {
     nextBtn === null || nextBtn === void 0 ? void 0 : nextBtn.addEventListener("click", nextTablePage);
     previousBtn === null || previousBtn === void 0 ? void 0 : previousBtn.addEventListener("click", previousTablePage);
 }
-function redirectToPostCreationPage() {
-    window.location.href = "/";
-}
-(_a = document.querySelector("#create-post")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", redirectToPostCreationPage);
+(_a = document.querySelector("#create-new")) === null || _a === void 0 ? void 0 : _a.addEventListener("click", redirectToPostCreationPage);
 getDataAndFillTable();
