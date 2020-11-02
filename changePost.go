@@ -9,7 +9,6 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
-	"path"
 	"strconv"
 	"time"
 
@@ -21,15 +20,6 @@ func generateRandomString() string {
 	randomNum := strconv.Itoa(rand.Int())
 	hash := md5.Sum([]byte(randomNum))
 	return hex.EncodeToString(hash[:])
-}
-
-// Returns the scheme used
-func getRequestType(r *http.Request) string {
-	// Request type is nil when the request is http: https://github.com/golang/go/issues/28940
-	if r.TLS == nil {
-		return "http://"
-	}
-	return "https://"
 }
 
 // Delete the post with the given link if having edit access
@@ -159,7 +149,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	viewID := addLinkIDToDatabase(w, generateRandomString(), postID, "View")
 
 	editLink := editID
-	viewLink := getRequestType(r) + path.Join(r.Host, r.RequestURI, viewID)
+	viewLink := viewID
 
 	// Encode and Send Response To Client
 	response := postLinks{EditLink: editLink, ViewLink: viewLink}

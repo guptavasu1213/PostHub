@@ -5,7 +5,7 @@ function deletePost(): void {
     }).then(resp => {
         if (resp.ok) {
             alert("Post successfully deleted");
-            window.location.href = "/";
+            window.location.href = "/posts";
         } else {
             alert("Error: The post did not get deleted");
             console.log("post deletion error:", resp.status, resp.statusText);
@@ -52,10 +52,10 @@ function updatePost(): void {
 
 // Attach button listeners on administrator page
 function attachUpdationListeners(): void {
-    let submitBtn = document.querySelector("#update");
+    let postForm = document.querySelector("#post-submission-form");
     let deleteBtn = document.querySelector("#delete");
-
-    submitBtn?.addEventListener("click", function (e) {
+    console.log("s")
+    postForm?.addEventListener("submit", function (e) {
         e.preventDefault();
         updatePost();
     });

@@ -7,10 +7,12 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"path"
 	"strconv"
-	"strings"
 )
+
+func getPostsPage(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./dist/allPosts.html")
+}
 
 // Extract view ID for a post using Post ID
 func getViewIDFromPostID(w http.ResponseWriter, postID int64) (string, error) {
@@ -62,8 +64,8 @@ func retrieveAdminPostPage(w http.ResponseWriter, r *http.Request, entry post) {
 	}
 
 	links := postLinks{
-		EditLink: path.Join(r.Host, "posts", entry.LinkID),
-		ViewLink: path.Join(r.Host, "posts", viewID),
+		EditLink: entry.LinkID,
+		ViewLink: viewID,
 	}
 
 	// Combine the post and links structs
@@ -123,12 +125,9 @@ func handleRetrievePost(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		lastSlashIndex := strings.LastIndex(r.URL.Path, "/")
-		resourceWithoutLinkID := r.URL.Path[:lastSlashIndex]
-
 		links := postLinks{
-			EditLink: getRequestType(r) + path.Join(r.Host, resourceWithoutLinkID, entry.LinkID),
-			ViewLink: getRequestType(r) + path.Join(r.Host, resourceWithoutLinkID, viewID),
+			EditLink: entry.LinkID,
+			ViewLink: viewID,
 		}
 		entry.LinkID = ""
 
@@ -193,11 +192,6 @@ func handleRetrievePosts(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		log.Println("error: data retrieval unsuccessful")
 		return
-	}
-
-	// Change Link ID to Links to the post
-	for i := range entries {
-		entries[i].LinkID = getRequestType(r) + path.Join(r.Host, r.URL.Path, entries[i].LinkID)
 	}
 
 	w.Header().Set("Content-Type", "application/json")

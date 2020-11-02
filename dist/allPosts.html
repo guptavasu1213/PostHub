@@ -1,0 +1,62 @@
+<!-- CMPT 315 (Fall 2020)
+     Assignment 2
+     Author: Vasu Gupta
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<title>Home Page</title>
+
+	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="allPosts.css">
+
+
+	<script type="text/x-dot-template" id="posts-template">
+        <!-- Template for rendering the data. If the data's length
+         is greater than 0, it renders a table with one row for
+         every element in the provided data. Otherwise, it renders
+       the message "No posts submitted yet!" -->
+
+       {{? it.length == 0}}
+	<div>
+		No posts submitted yet!
+	</div>
+	{{??}}
+	<table>
+		<tr class="row-headings">
+			<th>Title</th>
+			<th>Body</th>
+			<th>Unix Timestamp</th>
+		</tr>
+		{{~it :value}}
+		<tr>
+			<td class="title"><a href="/posts/{{=value.link}}">{{=value.title}}</a></td>
+			<td class="body"><a href="/posts/{{=value.link}}">{{=value.body}}</a></td>
+			<td class="timestamp"><a href="/posts/{{=value.link}}">{{=value.epoch}}</a></td>
+		</tr>
+		{{~}}
+	</table>
+	<p id="table-page-info"></p>
+	<input id="previous-page" class="button" type="submit" value="Previous">
+	<input id="next-page" class="button" type="submit" value="Next">
+	{{?}}
+
+	</script>
+</head>
+
+<body>
+	<h1>All Posts</h1>
+
+	<input id="create-post" class="button" type="button" value="Create New Post">
+	
+	<div id="table-content"></div>
+
+	<footer>Designed and Created by Vasu Gupta</footer>
+
+	<script src="doT.js"></script>
+	<script src="allPosts.js"></script>
+</body>
+
+</html>

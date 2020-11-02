@@ -5,7 +5,7 @@ function deletePost() {
     }).then(resp => {
         if (resp.ok) {
             alert("Post successfully deleted");
-            window.location.href = "/";
+            window.location.href = "/posts";
         }
         else {
             alert("Error: The post did not get deleted");
@@ -44,9 +44,10 @@ function updatePost() {
     });
 }
 function attachUpdationListeners() {
-    let submitBtn = document.querySelector("#update");
+    let postForm = document.querySelector("#post-submission-form");
     let deleteBtn = document.querySelector("#delete");
-    submitBtn === null || submitBtn === void 0 ? void 0 : submitBtn.addEventListener("click", function (e) {
+    console.log("s");
+    postForm === null || postForm === void 0 ? void 0 : postForm.addEventListener("submit", function (e) {
         e.preventDefault();
         updatePost();
     });

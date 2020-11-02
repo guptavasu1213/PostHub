@@ -22,7 +22,7 @@ function reportPost() {
     }).then(resp => {
         if (resp.ok) {
             alert("Post Reporting Successful!");
-            window.location.href = "/";
+            window.location.href = "/posts";
         }
         else {
             alert("Error: The post could not be reported");

@@ -1,81 +1,57 @@
-const limit = 10;
-let totalEntries = 10000000000;/////////////////////////////////////
-let offset = 0;
-
-// Fill the table with the json data
-function fillTableData(jsonArray: Array<any>): void {
-    jsonArray[0].link = "sndldsfd";
-    console.log("adsnsakdnj",jsonArray);
-
-    // Get the template from the DOM.
-    const template = (<HTMLOutputElement>document.querySelector("#posts-template")).innerHTML;
-
-    // // Create a render function for the template with doT.template.
-    const renderFn = doT.template(template);
-
-    // // Use the render function to render the data.
-    const result = renderFn(jsonArray);
-
-    // // Insert the result into the DOM (inside the <div> with the ID log.
-    (<HTMLOutputElement>document.querySelector("#table-content")).innerHTML = result;
-
-    let currentPageNumber = Math.floor(offset / limit) + 1;
-    (<HTMLOutputElement>document.querySelector("#table-page-info")).innerHTML = `Displaying ${currentPageNumber} of ${totalEntries} pages`;
-
-    attachButtonHandlers();
+function redirectToAdminPage(json: any) {
+    let link = '/posts/' + json.editLink;
+    console.log("redirect to:", link, json)
+    window.location.href = link;
 }
 
-// Get the data from the server and fill it in the table
-function getDataAndFillTable(): void {
-    fetch('/api/v1/posts?offset=' + offset + '&limit=' + limit, {
-        method: 'GET'
+// Create post and send to server
+function sendPostToServer(): void {
+    let title = (<HTMLInputElement>document.querySelector('#title')).value;
+    let body = (<HTMLInputElement>document.querySelector('#body')).value;
+    let scope = (<HTMLInputElement>document.querySelector('input[name="scope"]:checked')).value;
+
+    if (title.length === 0 || body.length === 0 || scope === null) {
+        return;
+    }
+
+    // Create JSON from the elements
+    let postBody = JSON.stringify({ title: title, body: body, scope: scope });
+
+    console.log(postBody);
+
+    // POST the form data to the server
+    fetch('/api/v1/posts', {
+        method: 'POST',
+        body: postBody,
+        headers: {
+            'Content-Type': 'application/json'
+        }
     }).then(resp => {
         if (resp.ok) {
-            return resp.json();
+            return resp.json()
         } else {
-            alert("Error: The posts cannot be retrieved");
-            console.log("posts retrieval error:", resp.status, resp.statusText);
+            console.log("post creation error:", resp.status, resp.statusText);
+            alert("Error: The post could not be created!")
         }
-    }).then(jsonArray => {
-        if (jsonArray !== undefined) {
-            console.log("-----------++", jsonArray);
-            fillTableData(jsonArray);
+    }).then(json =>{       
+        if (json !== undefined){
+            alert("Post Creation Successful!")
+            redirectToAdminPage(json);
         }
     }).catch(error => {
         console.log(error);
+        alert("Error: The post could not be created!")
     });
 }
 
-function nextTablePage(): void {
-    offset += limit;
-    if (offset > totalEntries) {
-        offset = totalEntries;
-    } else {
-        getDataAndFillTable();
-    }
+// Attach button listeners on creation page
+function attachCreationListeners() {
+    let postForm = document.querySelector("#post-submission-form");
+    
+    postForm?.addEventListener("submit", function (e) {
+        e.preventDefault();
+        sendPostToServer();
+    });
 }
 
-function previousTablePage(): void {
-    offset -= limit;
-    if (offset < 0) {
-        offset = 0;
-    } else {
-        getDataAndFillTable();
-    }
-}
-
-function attachButtonHandlers(): void {
-    let nextBtn = document.querySelector("#next-page");
-    let previousBtn = document.querySelector("#previous-page");
-
-    nextBtn?.addEventListener("click", nextTablePage);
-    previousBtn?.addEventListener("click", previousTablePage);
-}
-
-function redirectToPostCreationPage(): void{
-    window.location.href = "/createPost.html";
-}
-
-document.querySelector("#create-post")?.addEventListener("click", redirectToPostCreationPage)
-
-getDataAndFillTable();
+attachCreationListeners();
