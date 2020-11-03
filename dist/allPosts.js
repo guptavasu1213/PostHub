@@ -11,6 +11,13 @@ function fillTableData(jsonArray) {
     document.querySelector("#table-page-info").innerHTML = `Displaying Page ${currentPageNumber}`;
     attachButtonHandlers();
 }
+function convertUnixTimestampToDate(jsonArray) {
+    console.log(jsonArray);
+    for (let i in jsonArray) {
+        jsonArray[i].epoch = new Date(jsonArray[i].epoch * 1000).toLocaleTimeString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    }
+    return jsonArray;
+}
 function getDataAndFillTable() {
     fetch('/api/v1/posts?offset=' + offset + '&limit=' + limit, {
         method: 'GET'
@@ -30,6 +37,7 @@ function getDataAndFillTable() {
                 alert("This is the last page. Cannot go forward.");
             }
             else {
+                jsonArray = convertUnixTimestampToDate(jsonArray);
                 fillTableData(jsonArray);
             }
         }

@@ -25,6 +25,15 @@ function fillTableData(jsonArray: Array<any>): void {
     attachButtonHandlers();
 }
 
+// Convert Unix time stamp from the database to human legible date and time
+function convertUnixTimestampToDate(jsonArray: Array<any>): Array<any> {
+    console.log(jsonArray);
+    for (let i in jsonArray) {
+        jsonArray[i].epoch = new Date(jsonArray[i].epoch * 1000).toLocaleTimeString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    }
+    return jsonArray;
+}
+
 // Get the data from the server and fill it in the table
 function getDataAndFillTable(): void {
     fetch('/api/v1/posts?offset=' + offset + '&limit=' + limit, { // Make request
@@ -44,6 +53,7 @@ function getDataAndFillTable(): void {
                 offset -= limit;
                 alert("This is the last page. Cannot go forward.");
             } else {
+                jsonArray = convertUnixTimestampToDate(jsonArray);
                 fillTableData(jsonArray);
             }
         }
