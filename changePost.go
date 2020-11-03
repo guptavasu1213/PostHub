@@ -102,7 +102,7 @@ func isUniqueViolation(err error) bool {
 // Add a unique link to the database and return it
 func addLinkIDToDatabase(w http.ResponseWriter, linkID string, postID int64, access string) string {
 	query := `INSERT INTO links (link_id, access, post_id)
-                       VALUES ($1, $2, $3)`
+					   VALUES ($1, $2, $3)`
 	_, err := db.Exec(query, linkID, access, postID)
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -135,7 +135,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	// Insert data in posts table
 	var result sql.Result
 	query := `INSERT INTO posts (title, body, scope, epoch)
-                       VALUES ($1, $2, $3, $4)`
+					   VALUES ($1, $2, $3, $4)`
 	result, err = db.Exec(query, newPost.Title, newPost.Body, newPost.Scope, time.Now().Unix())
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

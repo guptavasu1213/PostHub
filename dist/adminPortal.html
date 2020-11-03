@@ -1,67 +1,67 @@
 <!-- CMPT 315 (Fall 2020)
-     Assignment 2
-     Author: Vasu Gupta
+	 Assignment 2
+	 Author: Vasu Gupta
 -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>Admin Portal</title>
+	<meta charset="utf-8">
+	<title>Admin Portal</title>
 
-    <link rel="stylesheet" type="text/css" href="/style.css">
-    <link rel="stylesheet" type="text/css" href="/adminPortal.css">
+	<link rel="stylesheet" type="text/css" href="/style.css">
+	<link rel="stylesheet" type="text/css" href="/adminPortal.css">
 </head>
 
 <body>
-    <section class="main-content">
-        <div class="nav-bar">
-            <input id="create-new" class="button nav-button" type="button" value="Create New Post">
-            <input id="view-all" class="button nav-button" type="button" value="View All Posts">
-        </div>
+	<section class="main-content">
+		<div class="nav-bar">
+			<input id="create-new" class="button nav-button" type="button" value="Create New Post">
+			<input id="view-all" class="button nav-button" type="button" value="View All Posts">
+		</div>
 
-        <h1>Administrator Post View</h1>
-        <div class="form-container">
-            <form id="post-submission-form">
-                <div class="post-container">
-                    <label class="label" for="title">Title</label><br>
-                    <input required class="textbox" type="text" id="title" name="title" value="{{.Title}}"><br>
+		<h1>Administrator Post View</h1>
+		<div class="form-container">
+			<form id="post-submission-form">
+				<div class="post-container">
+					<label class="label" for="title">Title</label><br>
+					<input required class="textbox" type="text" id="title" name="title" value="{{.Title}}"><br>
 
-                    <label class="label" for="body">Body</label><br>
-                    <textarea required class="textbox" name="body" id="body" rows="10">{{.Body}}</textarea>
-                </div>
+					<label class="label" for="body">Body</label><br>
+					<textarea required class="textbox" name="body" id="body" rows="10">{{.Body}}</textarea>
+				</div>
 
-                <div class="buttons">
-                    <!-- Use Golang template to select the radio button that was selected -->
-                    <div class="radio-buttons">
-                        <input type="radio" name="scope" id="public" value="Public" {{ if eq "Public" .Scope}}
-                            checked="checked" {{ end }}>
-                        <label for="public">Public</label>
+				<div class="buttons">
+					<!-- Use Golang template to select the radio button that was selected -->
+					<div class="radio-buttons">
+						<input type="radio" name="scope" id="public" value="Public" {{ if eq "Public" .Scope}}
+							checked="checked" {{ end }}>
+						<label for="public">Public</label>
 
-                        <input type="radio" name="scope" id="private" value="Private" {{ if eq "Private" .Scope}}
-                            checked="checked" {{ end }}>
-                        <label for="private">Private</label>
-                    </div>
+						<input type="radio" name="scope" id="private" value="Private" {{ if eq "Private" .Scope}}
+							checked="checked" {{ end }}>
+						<label for="private">Private</label>
+					</div>
 
-                    <div class="links">
-                        <label>View Link</label>
-                        <textarea readonly class="link" id="viewLink" rows="1">{{.ViewLink}}</textarea><br>
+					<div class="links">
+						<label>View Link</label>
+						<textarea readonly class="link" id="viewLink" rows="1">{{.ViewLink}}</textarea><br>
 
-                        <label>Administrator Link</label>
-                        <textarea readonly class="link" id="editLink" rows="1">{{.EditLink}}</textarea>
-                    </div>
+						<label>Administrator Link</label>
+						<textarea readonly class="link" id="editLink" rows="1">{{.EditLink}}</textarea>
+					</div>
 
-                    <input id="update" class="button" type="submit" value="Update">
-                    <input id="delete" class="button" type="button" value="Delete">
-                </div>
-            </form>
-        </div>
-    </section>
+					<input id="update" class="button" type="submit" value="Update">
+					<input id="delete" class="button" type="button" value="Delete">
+				</div>
+			</form>
+		</div>
+	</section>
 
-    <footer>Designed and Created by Vasu Gupta</footer>
+	<footer>Designed and Created by Vasu Gupta</footer>
 
-    <script src="/navBar.js"></script>
-    <script src="/adminPortal.js"></script>
+	<script src="/navBar.js"></script>
+	<script src="/adminPortal.js"></script>
 </body>
 
 </html>

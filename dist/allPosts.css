@@ -1,50 +1,50 @@
 body {
-    text-align: center;
+	text-align: center;
 }
 
 table {
-    width: 100%;
-    margin: 15px;
-    padding: 20px;
-    border: 2px solid black;
+	width: 100%;
+	margin: 15px;
+	padding: 20px;
+	border: 2px solid black;
 }
 
 .row-headings {
-    font-size: 1.5rem;
+	font-size: 1.5rem;
 }
 
 td a {
-    text-decoration: none;
-    font-size: large;
-    color: inherit;
-    width: 400px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    padding: 0.5rem 1rem;
+	text-decoration: none;
+	font-size: large;
+	color: inherit;
+	width: 400px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: block;
+	padding: 0.5rem 1rem;
 }
 
 tr {
-    color: black;
-    transition: .2s ease;
-    transition-property: background-color, color;
+	color: black;
+	transition: .2s ease;
+	transition-property: background-color, color;
 }
 
 tr:hover {
-    background-color: black;
-    color: white;
+	background-color: black;
+	color: white;
 }
 
 th, td {
-    border-bottom: 0.1px solid black;
+	border-bottom: 0.1px solid black;
 }
 
 #table-content {
-    margin: 2% 15%;
+	margin: 2% 15%;
 }
 
 #table-content p {
-    margin: 20px 0px;
-    font-size: large;
+	margin: 20px 0px;
+	font-size: large;
 }
