@@ -1,23 +1,12 @@
 {
-
-    "compilerOptions": {
-
-	"target": "ES2015",
-
-	"module": "none",
-
-	"outDir": "./dist",
-
-	"rootDir": "./src",
-
-	"removeComments": true,
-
-	"noImplicitAny": true,
-
-	"strictNullChecks": true,
-
-	"strict": true,
-
-    }
-
+	"compilerOptions": {
+		"target": "ES2015",
+		"module": "none",
+		"outDir": "./dist/js",
+		"rootDir": "./src",
+		"removeComments": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"strict": true,
+	}
 }

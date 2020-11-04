@@ -1,6 +1,6 @@
 "use strict";
 function deletePost() {
-    fetch('/api/v1' + window.location.pathname, {
+    fetch(`/api/v1/posts/${window.location.pathname.split("/").pop()}`, {
         method: 'DELETE'
     }).then(resp => {
         if (resp.ok) {
@@ -8,7 +8,7 @@ function deletePost() {
             redirectToViewAllPostsPage();
         }
         else {
-            console.log("post deletion error:", resp.status, resp.statusText);
+            console.log("post dWeletion error:", resp.status, resp.statusText);
             alert("Error: The post did not get deleted");
         }
     }).catch(error => {
@@ -25,7 +25,7 @@ function updatePost() {
     }
     let postBody = JSON.stringify({ title: title, body: body, scope: scope });
     console.log(postBody);
-    fetch('/api/v1' + window.location.pathname, {
+    fetch(`/api/v1/posts/${window.location.pathname.split("/").pop()}`, {
         method: 'PUT',
         body: postBody,
         headers: {

@@ -19,7 +19,7 @@ function convertUnixTimestampToDate(jsonArray) {
     return jsonArray;
 }
 function getDataAndFillTable() {
-    fetch('/api/v1/posts?offset=' + offset + '&limit=' + limit, {
+    fetch(`/api/v1/posts?offset=${offset}&limit=${limit}`, {
         method: 'GET'
     }).then(resp => {
         if (resp.ok) {

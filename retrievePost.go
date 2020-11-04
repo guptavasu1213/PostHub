@@ -15,7 +15,7 @@ import (
 func handlerToRetrieveAllPostsPage(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.RequestURI(), r.Method)
 
-	http.ServeFile(w, r, "./dist/allPosts.html")
+	http.ServeFile(w, r, "./dist/templates/allPosts.tmpl")
 }
 
 // Extract view ID for a post using Post ID
@@ -41,7 +41,7 @@ func getViewIDFromPostID(w http.ResponseWriter, postID int64) (string, error) {
 // Serve HTML template of the View Only page to the client
 func retrieveReadonlyPostPage(w http.ResponseWriter, entry post) {
 	// Creating HTML template
-	template, err := template.ParseFiles("dist/publicPortal.html")
+	template, err := template.ParseFiles("dist/templates/publicPortal.tmpl")
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError)+": Error in template parsing", http.StatusInternalServerError)
 		log.Println("error: could not generate html template")
@@ -55,7 +55,7 @@ func retrieveReadonlyPostPage(w http.ResponseWriter, entry post) {
 // Serve HTML template of the Admin Portal to the client
 func retrieveAdminPostPage(w http.ResponseWriter, r *http.Request, entry post) {
 	// Creating HTML template
-	template, err := template.ParseFiles("dist/adminPortal.html")
+	template, err := template.ParseFiles("dist/templates/adminPortal.tmpl")
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError)+": Error in template parsing", http.StatusInternalServerError)
 		log.Println("error: could not generate html template")

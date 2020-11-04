@@ -36,7 +36,7 @@ function convertUnixTimestampToDate(jsonArray: Array<any>): Array<any> {
 
 // Get the data from the server and fill it in the table
 function getDataAndFillTable(): void {
-	fetch('/api/v1/posts?offset=' + offset + '&limit=' + limit, { // Make request
+	fetch(`/api/v1/posts?offset=${offset}&limit=${limit}`, { // Make request
 		method: 'GET'
 	}).then(resp => { // Check response
 		if (resp.ok) {

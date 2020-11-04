@@ -26,7 +26,7 @@ function reportPost(): void {
 	console.log(reportBody);
 
 	// POST the form data to the server
-	fetch('/api/v1/posts/report/' + window.location.pathname.split("/").pop(), {
+	fetch(`/api/v1/posts/report/${window.location.pathname.split("/").pop()}`, {
 		method: 'POST',
 		body: reportBody,
 		headers: {

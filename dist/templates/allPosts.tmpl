@@ -9,8 +9,8 @@
 	<meta charset="utf-8">
 	<title>Home Page</title>
 
-	<link rel="stylesheet" type="text/css" href="style.css">
-	<link rel="stylesheet" type="text/css" href="allPosts.css">
+	<link rel="stylesheet" type="text/css" href="styles/style.css">
+	<link rel="stylesheet" type="text/css" href="styles/allPosts.css">
 
 
 	<script type="text/x-dot-template" id="posts-template">
@@ -32,9 +32,9 @@
 		</tr>
 		{{~it :value}}
 		<tr>
-			<td class="title"><a href="/posts/{{=value.link}}">{{=value.title}}</a></td>
-			<td class="body"><a href="/posts/{{=value.link}}">{{=value.body}}</a></td>
-			<td class="timestamp"><a href="/posts/{{=value.link}}">{{=value.epoch}}</a></td>
+			<td class="title"><a href="/pastes/{{=value.link}}">{{=value.title}}</a></td>
+			<td class="body"><a href="/pastes/{{=value.link}}">{{=value.body}}</a></td>
+			<td class="timestamp"><a href="/pastes/{{=value.link}}">{{=value.epoch}}</a></td>
 		</tr>
 		{{~}}
 	</table>
@@ -60,9 +60,9 @@
 
 	<footer>Designed and Created by Vasu Gupta</footer>
 
-	<script src="navBar.js"></script>
-	<script src="doT.js"></script>
-	<script src="allPosts.js"></script>
+	<script src="js/navBar.js"></script>
+	<script src="js/external/doT.js"></script>
+	<script src="js/allPosts.js"></script>
 </body>
 
 </html>
