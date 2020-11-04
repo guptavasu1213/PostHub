@@ -34,13 +34,13 @@ func main() {
 
 	// For an individual post
 	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("GET").HandlerFunc(handleRetrievePost)
-	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("POST").HandlerFunc(handleUpdatePost)
+	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("PUT").HandlerFunc(handleUpdatePost)
 	apiRouter.Path("/posts/report/{link_id:[0-9a-zA-Z]{32}}").Methods("POST").HandlerFunc(handlePostReport)
 	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
 	// Serve files
-	r.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").HandlerFunc(handleIndividualPageServing)
-	r.Path("/posts").HandlerFunc(handlerToRetrieveAllPostsPage)
+	r.Path("/pastes/{link_id:[0-9a-zA-Z]{32}}").HandlerFunc(handleIndividualPageServing)
+	r.Path("/pastes").HandlerFunc(handlerToRetrieveAllPostsPage)
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("dist")))
 
 	portNumber := ":8010"

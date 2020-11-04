@@ -1,7 +1,6 @@
 "use strict";
 function redirectToAdminPage(json) {
-    let link = '/posts/' + json.editLink;
-    window.location.href = link;
+    window.location.href = `/pastes/${json.editLink}`;
 }
 function sendPostToServer() {
     let title = document.querySelector('#title').value;

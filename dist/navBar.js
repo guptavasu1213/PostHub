@@ -3,7 +3,7 @@ function redirectToPostCreationPage() {
     window.location.href = "/";
 }
 function redirectToViewAllPostsPage() {
-    window.location.href = "/posts";
+    window.location.href = "/pastes";
 }
 function attachNavBarListeners() {
     let createNewPostsBtn = document.querySelector("#create-new");

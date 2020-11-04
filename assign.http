@@ -80,7 +80,7 @@ GET :api/posts/:unknownLinkID
 
 # Updating with a view link
 # Returns forbidden error
-POST :api/posts/:viewLinkID
+PUT :api/posts/:viewLinkID
 Content-Type: application/json
 
 {
@@ -90,7 +90,7 @@ Content-Type: application/json
 
 # Updating with an edit link to the post
 # Edits the post
-POST :api/posts/:editLinkID
+PUT :api/posts/:editLinkID
 Content-Type: application/json
 
 {
@@ -100,7 +100,7 @@ Content-Type: application/json
 
 # Updating with a unknown link
 # Returns Not Found error
-POST :api/posts/:unknownLinkID
+PUT :api/posts/:unknownLinkID
 Content-Type: application/json
 
 {
@@ -110,7 +110,7 @@ Content-Type: application/json
 
 # Updating with an edit link to the post with a null title
 # Reports Bad Request error
-POST :api/posts/:editLinkID
+PUT :api/posts/:editLinkID
 Content-Type: application/json
 
 {

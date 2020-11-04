@@ -4,8 +4,7 @@
 
 // Redirects to Admin View Page
 function redirectToAdminPage(json: any) {
-	let link = '/posts/' + json.editLink;
-	window.location.href = link;
+	window.location.href = `/pastes/${json.editLink}`;
 }
 
 // Create post and send to server

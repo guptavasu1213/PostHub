@@ -26,7 +26,7 @@ function updatePost() {
     let postBody = JSON.stringify({ title: title, body: body, scope: scope });
     console.log(postBody);
     fetch('/api/v1' + window.location.pathname, {
-        method: 'POST',
+        method: 'PUT',
         body: postBody,
         headers: {
             'Content-Type': 'application/json'

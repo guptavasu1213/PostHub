@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
-	"strings"
 
+	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -30,8 +30,7 @@ var db *sqlx.DB
 
 // Parse the URL to find the post link ID and scan the database for the corresponding entry
 func getEntryForRequestedLink(w http.ResponseWriter, r *http.Request) (post, error) {
-	lastIndex := strings.LastIndex(r.URL.Path, "/")
-	postLinkID := r.URL.Path[lastIndex+1:]
+	postLinkID := mux.Vars(r)["link_id"]
 
 	// Retrieve the post from the database
 	query := `SELECT *
