@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"math/rand"
 	"net/http"
@@ -20,6 +21,19 @@ func generateRandomString() string {
 	randomNum := strconv.Itoa(rand.Int())
 	hash := md5.Sum([]byte(randomNum))
 	return hex.EncodeToString(hash[:])
+}
+
+func handlerToRetrieveHomePage(w http.ResponseWriter, r *http.Request) {
+	// Creating HTML template
+	template, err := template.ParseFiles("dist/templates/index.tmpl", navBarTemplatePath, footerTemplatePath)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError)+": Error in template parsing", http.StatusInternalServerError)
+		log.Println("error: could not generate html template", err)
+		return
+	}
+
+	// Add struct values to the template
+	template.Execute(w, nil)
 }
 
 // Delete the post with the given link if having edit access
@@ -139,7 +153,7 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 	result, err = db.Exec(query, newPost.Title, newPost.Body, newPost.Scope, time.Now().Unix())
 	if err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println("error: post creation unsuccessful")
+		log.Println("error: post creation unsuccessful", err)
 		return
 	}
 	postID, err := result.LastInsertId()

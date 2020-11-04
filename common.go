@@ -28,6 +28,9 @@ type post struct {
 
 var db *sqlx.DB
 
+const navBarTemplatePath string = "dist/templates/navBar.tmpl"
+const footerTemplatePath string = "dist/templates/footer.tmpl"
+
 // Parse the URL to find the post link ID and scan the database for the corresponding entry
 func getEntryForRequestedLink(w http.ResponseWriter, r *http.Request) (post, error) {
 	postLinkID := mux.Vars(r)["link_id"]

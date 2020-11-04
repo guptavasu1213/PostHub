@@ -12,53 +12,49 @@
 	<link rel="stylesheet" type="text/css" href="styles/style.css">
 	<link rel="stylesheet" type="text/css" href="styles/allPosts.css">
 
-
 	<script type="text/x-dot-template" id="posts-template">
         <!-- Template for rendering the data. If the data's length
          is greater than 0, it renders a table with one row for
          every element in the provided data. Otherwise, it renders
        the message "No posts submitted yet!" -->
 
-       {{? it.length == 0}}
+       [[? it.length == 0]]
 	<div>
 		No posts submitted yet!
 	</div>
-	{{??}}
+	[[??]]
 	<table>
 		<tr class="row-headings">
 			<th>Title</th>
 			<th>Body</th>
 			<th>Creation Date and Time</th>
 		</tr>
-		{{~it :value}}
+		[[~it :value]]
 		<tr>
-			<td class="title"><a href="/pastes/{{=value.link}}">{{=value.title}}</a></td>
-			<td class="body"><a href="/pastes/{{=value.link}}">{{=value.body}}</a></td>
-			<td class="timestamp"><a href="/pastes/{{=value.link}}">{{=value.epoch}}</a></td>
+			<td class="title"><a href="/pastes/[[=value.link]]">[[=value.title]]</a></td>
+			<td class="body"><a href="/pastes/[[=value.link]]">[[=value.body]]</a></td>
+			<td class="timestamp"><a href="/pastes/[[=value.link]]">[[=value.epoch]]</a></td>
 		</tr>
-		{{~}}
+		[[~]]
 	</table>
 	<p id="table-page-info"></p>
 	<input id="previous-page" class="button" type="submit" value="Previous">
 	<input id="next-page" class="button" type="submit" value="Next">
-	{{?}}
+	[[?]]
 
 	</script>
 </head>
 
 <body>
 	<section class="main-content">
-		<div class="nav-bar">
-			<input id="create-new" class="button nav-button" type="button" value="Create New Post">
-			<input id="view-all" class="button nav-button" type="button" value="View All Posts">
-		</div>
+		{{template "nav-bar"}}
 
 		<h1>All Posts</h1>
 
 		<div id="table-content"></div>
 	</section>
 
-	<footer>Designed and Created by Vasu Gupta</footer>
+	{{template "footer"}}
 
 	<script src="js/navBar.js"></script>
 	<script src="js/external/doT.js"></script>

@@ -15,10 +15,7 @@
 
 <body>
 	<section class="main-content">
-		<div class="nav-bar">
-			<input id="create-new" class="button nav-button" type="button" value="Create New Post">
-			<input id="view-all" class="button nav-button" type="button" value="View All Posts">
-		</div>
+		{{template "nav-bar"}}
 
 		<h1>Public Post View</h1>
 		<div class="form-container">
@@ -61,7 +58,7 @@
 		</div>
 	</section>
 
-	<footer>Designed and Created by Vasu Gupta</footer>
+	{{template "footer"}}
 
 	<script src="/js/navBar.js"></script>
 	<script src="/js/publicPortal.js"></script>
