@@ -13,7 +13,7 @@ function reportPost() {
     }
     let reportBody = JSON.stringify({ reason: reportReason });
     console.log(reportBody);
-    fetch(`/api/v1/posts/report/${window.location.pathname.split("/").pop()}`, {
+    fetch(`/api/v1/posts/${window.location.pathname.split("/").pop()}/report`, {
         method: 'POST',
         body: reportBody,
         headers: {
