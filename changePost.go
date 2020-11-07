@@ -9,7 +9,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"log"
 	"math/rand"
@@ -17,6 +16,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jmoiron/sqlx"
 	sqlite3 "github.com/mattn/go-sqlite3"
 )
 
@@ -118,19 +118,56 @@ func isUniqueViolation(err error) bool {
 }
 
 // Add a unique link to the database and return it
-func addLinkIDToDatabase(w http.ResponseWriter, linkID string, postID int64, access string) string {
+func addLinkIDToDatabase(w http.ResponseWriter, tx *sqlx.Tx, linkID string, postID int64, access string) string {
 	query := `INSERT INTO links (link_id, access, post_id)
 					   VALUES ($1, $2, $3)`
-	_, err := db.Exec(query, linkID, access, postID)
+	_, err := tx.Exec(query, linkID, access, postID)
 	if err != nil {
 		if isUniqueViolation(err) {
-			linkID = addLinkIDToDatabase(w, generateRandomString(), postID, access)
+			linkID = addLinkIDToDatabase(w, tx, generateRandomString(), postID, access)
 		} else {
+			tx.Rollback()
 			http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			fmt.Println("post creation unsuccessful")
+			log.Println("post creation unsuccessful")
 		}
 	}
 	return linkID
+}
+
+// Add the post in the entry variable to the database
+func addPostToDatabase(w http.ResponseWriter, entry post) (string, string, error) {
+	// Start Transaction
+	tx, err := db.Beginx()
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("error: failure while beginning transaction", err)
+	}
+
+	// Insert data in posts table
+	var result sql.Result
+	query := `INSERT INTO posts (title, body, scope, epoch)
+					   VALUES ($1, $2, $3, $4)`
+	result, err = tx.Exec(query, entry.Title, entry.Body, entry.Scope, time.Now().Unix())
+	if err != nil {
+		tx.Rollback()
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("error: post creation unsuccessful", err)
+		return "", "", err
+	}
+	postID, err := result.LastInsertId()
+
+	// Insert the Link ID's to the Link table
+	editID := addLinkIDToDatabase(w, tx, generateRandomString(), postID, "Edit")
+	viewID := addLinkIDToDatabase(w, tx, generateRandomString(), postID, "View")
+
+	// Commit Transaction
+	err = tx.Commit()
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		log.Println("error: failure while commiting transaction ", err)
+	}
+
+	return editID, viewID, nil
 }
 
 // Create a post with the contents given by client and respond back with the access links
@@ -150,24 +187,14 @@ func handleCreatePost(w http.ResponseWriter, r *http.Request) {
 		log.Println("error: all fields are required and should be non-null")
 		return
 	}
-	// Insert data in posts table
-	var result sql.Result
-	query := `INSERT INTO posts (title, body, scope, epoch)
-					   VALUES ($1, $2, $3, $4)`
-	result, err = db.Exec(query, newPost.Title, newPost.Body, newPost.Scope, time.Now().Unix())
+
+	var editLink string
+	var viewLink string
+
+	editLink, viewLink, err = addPostToDatabase(w, newPost)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		log.Println("error: post creation unsuccessful", err)
 		return
 	}
-	postID, err := result.LastInsertId()
-
-	// Insert the Link ID's to the Link table
-	editID := addLinkIDToDatabase(w, generateRandomString(), postID, "Edit")
-	viewID := addLinkIDToDatabase(w, generateRandomString(), postID, "View")
-
-	editLink := editID
-	viewLink := viewID
 
 	// Encode and Send Response To Client
 	response := postLinks{EditLink: editLink, ViewLink: viewLink}
