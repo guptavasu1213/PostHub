@@ -55,7 +55,7 @@ func main() {
 	// For an individual post
 	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("GET").HandlerFunc(handleRetrievePost)
 	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("PUT").HandlerFunc(handleUpdatePost)
-	apiRouter.Path("/posts/report/{link_id:[0-9a-zA-Z]{32}}").Methods("POST").HandlerFunc(handlePostReport)
+	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}/report").Methods("POST").HandlerFunc(handlePostReport)
 	apiRouter.Path("/posts/{link_id:[0-9a-zA-Z]{32}}").Methods("DELETE").HandlerFunc(handleDeletePost)
 
 	// Serve files

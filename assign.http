@@ -108,13 +108,13 @@ Content-Type: application/json
 	"scope" : "Public"
 }
 
-# Updating with an edit link to the post with a null title
+# Updating with an edit link to the post with an empty title
 # Reports Bad Request error
 PUT :api/posts/:editLinkID
 Content-Type: application/json
 
 {
-	"title" : null, 
+	"title" : "", 
 	"scope" : "Public"
 }
 
@@ -122,7 +122,7 @@ Content-Type: application/json
 
 # Reporting with a view link
 # Reports the post
-POST :api/posts/report/:viewLinkID
+POST :api/posts/:viewLinkID/report
 Content-Type: application/json
 
 {
@@ -131,7 +131,7 @@ Content-Type: application/json
 
 # Reporting with a view link and null reason
 # Reports bad request error
-POST :api/posts/report/:viewLinkID
+POST :api/posts/:viewLinkID/report
 Content-Type: application/json
 
 {
@@ -140,7 +140,7 @@ Content-Type: application/json
 
 # Updating with an edit link to the post
 # Returns error
-POST :api/posts/report/:editLinkID
+POST :api/posts/:editLinkID/report
 Content-Type: application/json
 
 {
@@ -150,7 +150,7 @@ Content-Type: application/json
 
 # Updating with a unknown link
 # Returns Not Found error
-POST :api/posts/report/:unknownLinkID
+POST :api/posts/:unknownLinkID/report
 Content-Type: application/json
 
 {
