@@ -1,3 +1,7 @@
+// Vasu Gupta
+// ID: 3066521
+// Assignment 2
+
 // Redirect to Post Creation
 function redirectToPostCreationPage(): void {
 	window.location.href = "/";

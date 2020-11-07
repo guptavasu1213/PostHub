@@ -1,6 +1,6 @@
-// CMPT 315 (Fall 2020)
+// Vasu Gupta
+// ID: 3066521
 // Assignment 2
-// Author: Vasu Gupta
 
 // Redirects to Admin View Page
 function redirectToAdminPage(json: any) {
