@@ -1,8 +1,0 @@
-# An API for Text Sharing
-
-## Overview
-This repository contains a RESTful API for a text sharing web application where the users can share their posts with the public while maintaining anonymity. 
-
-## Database used
-
-* Sqlite 3
