@@ -1,7 +1,3 @@
-// Vasu Gupta
-// ID: 3066521
-// Assignment 2
-
 // Delete the post using the ID
 function deletePost(): void {
 	fetch(`/api/v1/posts/${window.location.pathname.split("/").pop()}`, {

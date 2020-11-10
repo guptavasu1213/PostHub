@@ -1,7 +1,3 @@
-// Vasu Gupta
-// ID: 3066521
-// Assignment 2
-
 // Report the post
 function reportPost(): void {
 	let reportReason = (<HTMLInputElement>document.querySelector('input[name="report"]:checked')).value;

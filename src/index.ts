@@ -1,7 +1,3 @@
-// Vasu Gupta
-// ID: 3066521
-// Assignment 2
-
 // Redirects to Admin View Page
 function redirectToAdminPage(json: any) {
 	window.location.href = `/pastes/${json.editLink}`;

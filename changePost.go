@@ -1,7 +1,3 @@
-// Vasu Gupta
-// ID: 3066521
-// Assignment 2
-
 package main
 
 import (

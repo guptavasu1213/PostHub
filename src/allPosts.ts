@@ -1,7 +1,3 @@
-// Vasu Gupta
-// ID: 3066521
-// Assignment 2
-
 const limit = 10;
 let offset = 0;
 

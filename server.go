@@ -1,7 +1,3 @@
-// Vasu Gupta
-// ID: 3066521
-// Assignment 2
-
 package main
 
 import (
@@ -28,7 +24,7 @@ func usage() {
 func parseFlags() {
 	flag.Usage = usage
 	flag.IntVar(&portNumber, "port", 8080, "port number for connection")
-	flag.StringVar(&databaseFilePath, "dbPath", "assign1.db", "database file path")
+	flag.StringVar(&databaseFilePath, "dbPath", "records.db", "database file path")
 	flag.Parse()
 }
 
