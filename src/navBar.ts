@@ -5,7 +5,7 @@ function redirectToPostCreationPage(): void {
 
 // Redirect to public view displaying all posts
 function redirectToViewAllPostsPage(): void {
-	window.location.href = "/pastes";
+	window.location.href = "/posts";
 }
 
 // Attach listeners for the navigation bar
